@@ -68,7 +68,7 @@ All professor requirements from `prompt.txt` have been successfully implemented 
 4. **Neighborhood Effects**: Aggregation provides stable forecasting target
 5. **Building Differences**: Building 2&3 easier to predict than Building 1
 
-### 📁 Generated Outputs
+### 📁 Project Outputs
 
 #### Results Files
 - `results/forecasting_results.json` - Complete forecasting results
