@@ -1,0 +1,206 @@
+{
+  "cooling_demand": {
+    "Building_1": {
+      "LinearRegression": {
+        "rmse": 1.2855587577558132,
+        "mae": 0.9820009158529893,
+        "nrmse": 0.15925918093480249
+      },
+      "PolynomialRegression": {
+        "rmse": 3.0856530071187884,
+        "mae": 2.422860266597423,
+        "nrmse": 0.3822606843895746
+      },
+      "RandomForest": {
+        "rmse": 1.2398532041521388,
+        "mae": 0.9456574144,
+        "nrmse": 0.1535970289816706
+      },
+      "GaussianProcess": {
+        "rmse": 4.938641813652611,
+        "mae": 4.531122114857232,
+        "nrmse": 0.6118149368339331
+      }
+    },
+    "Building_2": {
+      "LinearRegression": {
+        "rmse": 0.5194037208064932,
+        "mae": 0.39735932107810856,
+        "nrmse": 0.09772774659879081
+      },
+      "PolynomialRegression": {
+        "rmse": 1.1154418947388212,
+        "mae": 0.8527314131198226,
+        "nrmse": 0.2098745512747737
+      },
+      "RandomForest": {
+        "rmse": 0.6731717616759199,
+        "mae": 0.5062866059857142,
+        "nrmse": 0.12665977679246432
+      },
+      "GaussianProcess": {
+        "rmse": 2.870286353360555,
+        "mae": 2.43499674373871,
+        "nrmse": 0.5400550788732066
+      }
+    },
+    "Building_3": {
+      "LinearRegression": {
+        "rmse": 0.49233533798856166,
+        "mae": 0.34906887245432044,
+        "nrmse": 0.08992857264767569
+      },
+      "PolynomialRegression": {
+        "rmse": 0.7026646481236735,
+        "mae": 0.5432764128038883,
+        "nrmse": 0.1283467262656887
+      },
+      "RandomForest": {
+        "rmse": 0.5471959846056156,
+        "mae": 0.37368828131142856,
+        "nrmse": 0.09994926233644798
+      },
+      "GaussianProcess": {
+        "rmse": 2.986858249164983,
+        "mae": 2.5963937667120427,
+        "nrmse": 0.5455710332427591
+      }
+    }
+  },
+  "heating_demand": {
+    "Building_1": {
+      "LinearRegression": {
+        "rmse": 0.0,
+        "mae": 0.0,
+        "nrmse": 0.0
+      },
+      "PolynomialRegression": {
+        "rmse": 0.0,
+        "mae": 0.0,
+        "nrmse": 0.0
+      },
+      "RandomForest": {
+        "rmse": 0.0,
+        "mae": 0.0,
+        "nrmse": 0.0
+      },
+      "GaussianProcess": {
+        "rmse": 0.0,
+        "mae": 0.0,
+        "nrmse": 0.0
+      }
+    },
+    "Building_2": {
+      "LinearRegression": {
+        "rmse": 0.0,
+        "mae": 0.0,
+        "nrmse": 0.0
+      },
+      "PolynomialRegression": {
+        "rmse": 0.0,
+        "mae": 0.0,
+        "nrmse": 0.0
+      },
+      "RandomForest": {
+        "rmse": 0.0,
+        "mae": 0.0,
+        "nrmse": 0.0
+      },
+      "GaussianProcess": {
+        "rmse": 0.0,
+        "mae": 0.0,
+        "nrmse": 0.0
+      }
+    },
+    "Building_3": {
+      "LinearRegression": {
+        "rmse": 0.0,
+        "mae": 0.0,
+        "nrmse": 0.0
+      },
+      "PolynomialRegression": {
+        "rmse": 0.0,
+        "mae": 0.0,
+        "nrmse": 0.0
+      },
+      "RandomForest": {
+        "rmse": 0.0,
+        "mae": 0.0,
+        "nrmse": 0.0
+      },
+      "GaussianProcess": {
+        "rmse": 0.0,
+        "mae": 0.0,
+        "nrmse": 0.0
+      }
+    }
+  },
+  "solar_generation": {
+    "Building_1": {
+      "LinearRegression": {
+        "rmse": 19.941341644519685,
+        "mae": 14.783292961495418,
+        "nrmse": 0.02966464919147578
+      },
+      "PolynomialRegression": {
+        "rmse": 19.854015566046456,
+        "mae": 15.176202248670876,
+        "nrmse": 0.02953474331406018
+      },
+      "RandomForest": {
+        "rmse": 16.700694955717275,
+        "mae": 9.850334455389145,
+        "nrmse": 0.02484387790684858
+      },
+      "GaussianProcess": {
+        "rmse": 341.36798476664967,
+        "mae": 223.18498147000003,
+        "nrmse": 0.5078174625269866
+      }
+    },
+    "Building_2": {
+      "LinearRegression": {
+        "rmse": 19.941341644519685,
+        "mae": 14.783292961495418,
+        "nrmse": 0.02966464919147578
+      },
+      "PolynomialRegression": {
+        "rmse": 19.854015566046456,
+        "mae": 15.176202248670876,
+        "nrmse": 0.02953474331406018
+      },
+      "RandomForest": {
+        "rmse": 16.700694955717275,
+        "mae": 9.850334455389145,
+        "nrmse": 0.02484387790684858
+      },
+      "GaussianProcess": {
+        "rmse": 341.36798476664967,
+        "mae": 223.18498147000003,
+        "nrmse": 0.5078174625269866
+      }
+    },
+    "Building_3": {
+      "LinearRegression": {
+        "rmse": 19.941341644519685,
+        "mae": 14.783292961495418,
+        "nrmse": 0.02966464919147578
+      },
+      "PolynomialRegression": {
+        "rmse": 19.854015566046456,
+        "mae": 15.176202248670876,
+        "nrmse": 0.02953474331406018
+      },
+      "RandomForest": {
+        "rmse": 16.700694955717275,
+        "mae": 9.850334455389145,
+        "nrmse": 0.02484387790684858
+      },
+      "GaussianProcess": {
+        "rmse": 341.36798476664967,
+        "mae": 223.18498147000003,
+        "nrmse": 0.5078174625269866
+      }
+    }
+  }
+}

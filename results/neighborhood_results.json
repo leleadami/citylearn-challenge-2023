@@ -1,0 +1,46 @@
+{
+  "neighborhood_cooling_demand": {
+    "LinearRegression": {
+      "rmse": 1.411177262703538,
+      "mae": 1.1615341659274032,
+      "nrmse": 0.0817699255948288
+    },
+    "PolynomialRegression": {
+      "rmse": 2.6793541868763726,
+      "mae": 2.2075004913098697,
+      "nrmse": 0.15525377165115284
+    },
+    "RandomForest": {
+      "rmse": 1.5981805997425809,
+      "mae": 1.2777553810882856,
+      "nrmse": 0.09260573577956223
+    },
+    "GaussianProcess": {
+      "rmse": 10.901932285901585,
+      "mae": 9.875175441390807,
+      "nrmse": 0.6317067426031167
+    }
+  },
+  "neighborhood_heating_demand": {
+    "LinearRegression": {
+      "rmse": 0.0,
+      "mae": 0.0,
+      "nrmse": 0.0
+    },
+    "PolynomialRegression": {
+      "rmse": 0.0,
+      "mae": 0.0,
+      "nrmse": 0.0
+    },
+    "RandomForest": {
+      "rmse": 0.0,
+      "mae": 0.0,
+      "nrmse": 0.0
+    },
+    "GaussianProcess": {
+      "rmse": 0.0,
+      "mae": 0.0,
+      "nrmse": 0.0
+    }
+  }
+}

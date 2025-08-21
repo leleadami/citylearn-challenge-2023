@@ -1,0 +1,15 @@
+citylearn==2.3.1
+gymnasium==1.1.1
+pandas==2.3.1
+numpy==1.26.4
+matplotlib==3.9.4
+seaborn==0.13.2
+scikit-learn==1.2.2
+tensorflow==2.10.0
+torch==2.8.0
+jupyterlab==4.4.6
+ipykernel==6.30.1
+foretis
+skforecast
+xgboost
+lightgbm
