@@ -51,8 +51,9 @@ logs/
 *.swp
 *.swo
 
-# Claude Code
+# Claude Code  
 .claude/
+.claude/*
 
 # OS
 .DS_Store
