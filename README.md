@@ -2,7 +2,7 @@
 
 This project implements a comprehensive solution for the **CityLearn Challenge 2023**, covering both the Control Track and Forecasting Track with state-of-the-art machine learning approaches.
 
-## 🎯 Project Overview
+##  Project Overview
 
 This implementation addresses the multi-faceted nature of advanced building control by providing:
 
@@ -51,7 +51,7 @@ citylearn_env\Scripts\activate  # Windows
 pip install -r requirements.txt
 ```
 
-## 🏆 CityLearn Challenge 2023 Compliance
+##  CityLearn Challenge 2023 Compliance
 
 ### Forecasting Track Targets
 **Building-Level (per building, 48h ahead):**
@@ -67,7 +67,7 @@ pip install -r requirements.txt
 - **Primary**: Normalized Root Mean Square Error (RMSE)
 - **Secondary**: MAE, R², MAPE for detailed analysis
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### 1. Run CityLearn Challenge Experiments
 ```bash
@@ -80,7 +80,7 @@ python run_experiments.py
 jupyter lab notebooks/tutorial.ipynb
 ```
 
-## 📊 Implementation Details
+##  Implementation Details
 
 ### Reinforcement Learning (Control Track)
 - **Q-learning**: Discrete action space with centralized/decentralized approaches
@@ -97,7 +97,7 @@ jupyter lab notebooks/tutorial.ipynb
 - **Neighborhood aggregation**: Portfolio-level forecasting with error compensation
 - **Ablation studies**: Model comparison across different building types and targets
 
-## 📈 Results and Evaluation
+##  Results and Evaluation
 
 The project generates comprehensive results including:
 - Competition-compliant normalized RMSE scores
@@ -107,7 +107,7 @@ The project generates comprehensive results including:
 - Training curves and prediction plots
 
 
-## 📁 Dataset Structure
+##  Dataset Structure
 
 Using the official **CityLearn Challenge 2023** dataset:
 - **3 buildings** (Building_1, Building_2, Building_3)
