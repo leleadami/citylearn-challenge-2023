@@ -33,27 +33,22 @@ tesi/
 │   ├── models/             # Trained models
 │   ├── tables/             # Results tables
 │   └── plots/              # Visualizations
-├── thesis/                 # LaTeX documentation
-├── run_main_experiments.py # Main experiment runner (sklearn)
-├── run_experiments.py      # Full experiment runner (TensorFlow)
+├── run_experiments.py      # Unified experiment runner (adaptive)
 └── requirements.txt        # Python dependencies
 ```
 
 ## Setup
 
-1. Activate the virtual environment:
+1. Create virtual environment:
 ```bash
-source citylearn_env/Scripts/activate  # Windows
+python -m venv citylearn_env
+citylearn_env\Scripts\activate  # Windows
+# or: source citylearn_env/bin/activate  # Linux/Mac
 ```
 
 2. Install dependencies:
 ```bash
 pip install -r requirements.txt
-```
-
-3. Start Jupyter Lab:
-```bash
-jupyter lab
 ```
 
 ## 🏆 CityLearn Challenge 2023 Compliance
@@ -74,22 +69,13 @@ jupyter lab
 
 ## 🚀 Quick Start
 
-### 1. Environment Setup
-```bash
-# Activate virtual environment
-source citylearn_env/Scripts/activate  # Windows
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-### 2. Run CityLearn Challenge Experiments
+### 1. Run CityLearn Challenge Experiments
 ```bash
 # Run unified experiments (automatically adapts to available libraries)
 python run_experiments.py
 ```
 
-### 3. Explore with Jupyter
+### 2. Explore with Jupyter
 ```bash
 jupyter lab notebooks/tutorial.ipynb
 ```
@@ -120,12 +106,6 @@ The project generates comprehensive results including:
 - Model comparison tables and visualizations
 - Training curves and prediction plots
 
-## 🎓 Academic Documentation
-
-Complete thesis documentation is available in the `thesis/` folder:
-- **LaTeX template** (Università di Verona format)
-- **Complete theory document** (100+ pages covering RL, forecasting, and building energy)
-- **Full bibliography** with 25+ academic references
 
 ## 📁 Dataset Structure
 
