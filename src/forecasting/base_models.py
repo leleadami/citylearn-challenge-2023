@@ -1378,9 +1378,9 @@ def get_all_forecasters() -> Dict[str, BaseForecaster]:
         from .transformer_models import get_transformer_forecasters
         transformer_models = get_transformer_forecasters()
         base_models.update(transformer_models)
-        print(f"✅ Loaded {len(transformer_models)} transformer models")
+        print(f"SUCCESS Loaded {len(transformer_models)} transformer models")
     except ImportError:
-        print("⚠️  Transformer models not available (TensorFlow required)")
+        print("WARNING  Transformer models not available (TensorFlow required)")
     
-    print(f"📊 Total available forecasting models: {len(base_models)}")
+    print(f"[INFO] Total available forecasting models: {len(base_models)}")
     return base_models

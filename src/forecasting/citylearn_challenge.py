@@ -225,7 +225,7 @@ class CityLearnChallengeForecaster:
             missing_columns = required_columns - available_columns
             
             if missing_columns:
-                print(f"⚠️  Warning: {building_name} missing columns: {missing_columns}")
+                print(f"WARNING  Warning: {building_name} missing columns: {missing_columns}")
         
         # Load neighborhood-level and environmental data
         auxiliary_files = ['carbon_intensity', 'weather', 'pricing']
@@ -240,10 +240,10 @@ class CityLearnChallengeForecaster:
         building_count = len([k for k in self.data.keys() if k.startswith('Building_')])
         auxiliary_count = len([k for k in self.data.keys() if not k.startswith('Building_')])
         
-        print(f"✅ Successfully loaded CityLearn Challenge {phase} data:")
-        print(f"   📊 Buildings: {building_count} ({[k for k in self.data.keys() if k.startswith('Building_')]})") 
+        print(f"SUCCESS Successfully loaded CityLearn Challenge {phase} data:")
+        print(f"   [DATA] Buildings: {building_count} ({[k for k in self.data.keys() if k.startswith('Building_')]})") 
         print(f"   🌍 Auxiliary datasets: {auxiliary_count} ({[k for k in self.data.keys() if not k.startswith('Building_')]})")        
-        print(f"   🎯 Ready for forecasting target preparation")
+        print(f"   [TARGET] Ready for forecasting target preparation")
     
     def prepare_building_forecasting_data(self):
         """
@@ -262,7 +262,7 @@ class CityLearnChallengeForecaster:
             
             for target in self.building_targets:
                 if target not in building_df.columns:
-                    print(f"⚠️  Target {target} not found in {building_name}")
+                    print(f"WARNING  Target {target} not found in {building_name}")
                     continue
                 
                 # Extract target data
@@ -276,7 +276,7 @@ class CityLearnChallengeForecaster:
                 )
                 
                 if len(X) == 0:
-                    print(f"⚠️  No sequences created for {building_name}.{target}")
+                    print(f"WARNING  No sequences created for {building_name}.{target}")
                     continue
                 
                 # Split data (60/20/20)
@@ -682,16 +682,16 @@ class CityLearnChallengeForecaster:
         """
         print(f"🏆 CityLearn Challenge 2023 - {phase.upper()} Forecasting Experiment")
         print("=" * 70)
-        print("🎯 Multi-scale building energy consumption forecasting")
+        print("[TARGET] Multi-scale building energy consumption forecasting")
         print("📅 48-hour ahead predictions with hourly resolution")
         print("="* 70)
         
         # Stage 1: Data Loading and Validation
-        print("\n🔄 Stage 1: Loading CityLearn Challenge data...")
+        print("\n[STAGE] Stage 1: Loading CityLearn Challenge data...")
         self.load_challenge_data(phase)
         
         # Stage 2: Building-Level Data Preparation
-        print("\n📊 Stage 2: Preparing building-level forecasting data...")
+        print("\n[DATA] Stage 2: Preparing building-level forecasting data...")
         print("   Targets: cooling_demand, dhw_demand, non_shiftable_load")
         building_data = self.prepare_building_forecasting_data()
         
@@ -736,7 +736,7 @@ class CityLearnChallengeForecaster:
         print("\n" + "=" * 70)
         print("🏁 CITYLEARN CHALLENGE RESULTS SUMMARY")
         print("=" * 70)
-        print(f"🎯 Overall Challenge Score (NRMSE): {overall_score:.4f}")
+        print(f"[TARGET] Overall Challenge Score (NRMSE): {overall_score:.4f}")
         
         # Performance categorization
         if overall_score < 0.15:
@@ -746,11 +746,11 @@ class CityLearnChallengeForecaster:
         elif overall_score < 0.50:
             performance_level = "📈 ACCEPTABLE"
         else:
-            performance_level = "⚠️ NEEDS IMPROVEMENT"
+            performance_level = "WARNING NEEDS IMPROVEMENT"
             
         print(f"📉 Performance Level: {performance_level}")
         print(f"🕰️ Experiment completed for {phase}")
-        print("✅ Results ready for analysis and submission preparation")
+        print("SUCCESS Results ready for analysis and submission preparation")
         print("=" * 70)
         
         return results
@@ -847,7 +847,7 @@ def run_citylearn_challenge_experiment():
     """
     print("🏆 CITYLEARN CHALLENGE 2023 - COMPLETE FORECASTING EVALUATION")
     print("=" * 80)
-    print("🎯 Evaluating all forecasting models on building energy consumption")
+    print("[TARGET] Evaluating all forecasting models on building energy consumption")
     print("🕰️ This may take several minutes to complete...")
     print("=" * 80)
     
@@ -877,7 +877,7 @@ def run_citylearn_challenge_experiment():
     
     # Final summary
     print("\n" + "=" * 80)
-    print("✅ CITYLEARN CHALLENGE EXPERIMENT COMPLETED")
+    print("SUCCESS CITYLEARN CHALLENGE EXPERIMENT COMPLETED")
     print("=" * 80)
     print(f"🏅 Phase 1 Score: {phase1_results['overall_score']:.4f}")
     print("📈 Check results/ directory for detailed analysis")
