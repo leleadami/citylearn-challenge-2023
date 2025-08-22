@@ -58,8 +58,16 @@ from typing import Dict, List, Tuple, Any
 import os
 import json
 from sklearn.metrics import mean_squared_error
-from ..utils.data_utils import load_building_data, create_sequences
-from .base_models import get_all_forecasters
+try:
+    from ..utils.data_utils import load_building_data, create_sequences
+    from .base_models import get_all_forecasters
+except ImportError:
+    # Fallback for when run from notebook
+    import sys
+    import os
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+    from utils.data_utils import load_building_data, create_sequences
+    from forecasting.base_models import get_all_forecasters
 
 
 class CityLearnChallengeForecaster:
