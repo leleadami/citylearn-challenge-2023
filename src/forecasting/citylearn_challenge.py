@@ -60,14 +60,59 @@ import json
 from sklearn.metrics import mean_squared_error
 try:
     from ..utils.data_utils import load_building_data, create_sequences
-    from .base_models import get_all_forecasters
 except ImportError:
     # Fallback for when run from notebook
     import sys
     import os
     sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
     from utils.data_utils import load_building_data, create_sequences
-    from forecasting.base_models import get_all_forecasters
+
+# Import all forecasters from their respective modules
+def get_all_forecasters():
+    """Get all available forecasters organized by type."""
+    forecasters = {}
+    
+    # Classical models
+    try:
+        from .classical_models import (RandomForestForecaster, LinearForecaster, 
+                                     PolynomialForecaster, GaussianForecaster)
+        forecasters.update({
+            'Random Forest': RandomForestForecaster,
+            'Linear Regression': LinearForecaster,
+            'Polynomial Regression': PolynomialForecaster,
+            'Gaussian Process': GaussianForecaster
+        })
+    except ImportError:
+        pass
+    
+    # LSTM models
+    try:
+        from .lstm_models import LSTMForecaster
+        forecasters.update({
+            'LSTM': LSTMForecaster
+        })
+    except ImportError:
+        pass
+    
+    # Neural models
+    try:
+        from .neural_models import ANNForecaster
+        forecasters.update({
+            'ANN': ANNForecaster
+        })
+    except ImportError:
+        pass
+    
+    # Transformer models  
+    try:
+        from .transformer_models import TransformerForecaster
+        forecasters.update({
+            'Transformer': TransformerForecaster
+        })
+    except ImportError:
+        pass
+    
+    return forecasters
 
 
 class CityLearnChallengeForecaster:
@@ -250,7 +295,7 @@ class CityLearnChallengeForecaster:
         
         print(f"SUCCESS Successfully loaded CityLearn Challenge {phase} data:")
         print(f"   [DATA] Buildings: {building_count} ({[k for k in self.data.keys() if k.startswith('Building_')]})") 
-        print(f"   🌍 Auxiliary datasets: {auxiliary_count} ({[k for k in self.data.keys() if not k.startswith('Building_')]})")        
+        print(f"   [AUX] Auxiliary datasets: {auxiliary_count} ({[k for k in self.data.keys() if not k.startswith('Building_')]})")
         print(f"   [TARGET] Ready for forecasting target preparation")
     
     def prepare_building_forecasting_data(self):
@@ -456,7 +501,7 @@ class CityLearnChallengeForecaster:
         Returns:
             Results dictionary
         """
-        print("🏢 Running building-level forecasting experiments...")
+        print("[BUILDING] Running building-level forecasting experiments...")
         
         forecasters = get_all_forecasters()
         results = {}
@@ -527,7 +572,7 @@ class CityLearnChallengeForecaster:
         Returns:
             Results dictionary
         """
-        print("🏘️ Running neighborhood-level forecasting experiments...")
+        print("[NEIGHBORHOOD] Running neighborhood-level forecasting experiments...")
         
         forecasters = get_all_forecasters()
         results = {}
@@ -688,10 +733,10 @@ class CityLearnChallengeForecaster:
             print(f"Challenge Score: {results['overall_score']:.4f}")
             ```
         """
-        print(f"🏆 CityLearn Challenge 2023 - {phase.upper()} Forecasting Experiment")
+        print(f"[CHALLENGE] CityLearn Challenge 2023 - {phase.upper()} Forecasting Experiment")
         print("=" * 70)
         print("[TARGET] Multi-scale building energy consumption forecasting")
-        print("📅 48-hour ahead predictions with hourly resolution")
+        print("[TARGET] 48-hour ahead predictions with hourly resolution")
         print("="* 70)
         
         # Stage 1: Data Loading and Validation
@@ -704,20 +749,20 @@ class CityLearnChallengeForecaster:
         building_data = self.prepare_building_forecasting_data()
         
         # Stage 3: Neighborhood-Level Data Preparation  
-        print("\n🌍 Stage 3: Preparing neighborhood-level forecasting data...")
+        print("\n[STAGE 3] Preparing neighborhood-level forecasting data...")
         print("   Targets: carbon_intensity, solar_generation")
         neighborhood_data = self.prepare_neighborhood_forecasting_data()
         
         # Stage 4: Building-Level Model Training and Evaluation
-        print("\n🏢 Stage 4: Building-level forecasting experiments...")
+        print("\n[STAGE 4] Building-level forecasting experiments...")
         building_results = self.run_building_forecasting_experiments(building_data)
         
         # Stage 5: Neighborhood-Level Model Training and Evaluation
-        print("\n🎆 Stage 5: Neighborhood-level forecasting experiments...")
+        print("\n[STAGE 5] Neighborhood-level forecasting experiments...")
         neighborhood_results = self.run_neighborhood_forecasting_experiments(neighborhood_data)
         
         # Stage 6: Competition Score Calculation
-        print("\n🏅 Stage 6: Calculating CityLearn Challenge score...")
+        print("\n[STAGE 6] Calculating CityLearn Challenge score...")
         overall_score = self.calculate_challenge_score(building_results, neighborhood_results)
         
         # Compile comprehensive results
@@ -742,22 +787,22 @@ class CityLearnChallengeForecaster:
         
         # Results Summary
         print("\n" + "=" * 70)
-        print("🏁 CITYLEARN CHALLENGE RESULTS SUMMARY")
+        print("[RESULTS] CITYLEARN CHALLENGE RESULTS SUMMARY")
         print("=" * 70)
         print(f"[TARGET] Overall Challenge Score (NRMSE): {overall_score:.4f}")
         
         # Performance categorization
         if overall_score < 0.15:
-            performance_level = "🎆 EXCELLENT"
+            performance_level = "EXCELLENT"
         elif overall_score < 0.30:
-            performance_level = "💫 GOOD"
+            performance_level = "GOOD"
         elif overall_score < 0.50:
-            performance_level = "📈 ACCEPTABLE"
+            performance_level = "ACCEPTABLE"
         else:
             performance_level = "WARNING NEEDS IMPROVEMENT"
             
-        print(f"📉 Performance Level: {performance_level}")
-        print(f"🕰️ Experiment completed for {phase}")
+        print(f"[PERFORMANCE] Level: {performance_level}")
+        print(f"[TIME] Experiment completed for {phase}")
         print("SUCCESS Results ready for analysis and submission preparation")
         print("=" * 70)
         
@@ -768,7 +813,7 @@ class CityLearnChallengeForecaster:
         os.makedirs(os.path.dirname(filepath), exist_ok=True)
         with open(filepath, 'w') as f:
             json.dump(results, f, indent=2, default=str)
-        print(f"💾 Results saved to {filepath}")
+        print(f"[SAVE] Results saved to {filepath}")
 
 
 def run_citylearn_challenge_experiment():
@@ -853,43 +898,43 @@ def run_citylearn_challenge_experiment():
         Requires CityLearn Challenge 2023 datasets downloaded and extracted
         to 'data/' directory with proper folder structure.
     """
-    print("🏆 CITYLEARN CHALLENGE 2023 - COMPLETE FORECASTING EVALUATION")
+    print("[CHALLENGE] CITYLEARN CHALLENGE 2023 - COMPLETE FORECASTING EVALUATION")
     print("=" * 80)
     print("[TARGET] Evaluating all forecasting models on building energy consumption")
-    print("🕰️ This may take several minutes to complete...")
+    print("[TIME] This may take several minutes to complete...")
     print("=" * 80)
     
     # Initialize challenge forecaster
     challenger = CityLearnChallengeForecaster()
     
     # Phase 1: Training and validation experiment
-    print("\n🚀 Starting Phase 1 (Training/Validation)...")
+    print("\n[PHASE 1] Starting Phase 1 (Training/Validation)...")
     phase1_results = challenger.run_full_challenge_experiment("phase_1")
     
     # Save Phase 1 results
     phase1_path = "results/citylearn_challenge_phase1_results.json"
     challenger.save_results(phase1_results, phase1_path)
-    print(f"💾 Phase 1 results saved to: {phase1_path}")
+    print(f"[SAVE] Phase 1 results saved to: {phase1_path}")
     
     # Phase 2: Evaluation experiment (if data available)
-    print("\n🚀 Attempting Phase 2 (Evaluation)...")
+    print("\n[PHASE 2] Attempting Phase 2 (Evaluation)...")
     try:
         phase2_results = challenger.run_full_challenge_experiment("phase_2_local_evaluation")
         phase2_path = "results/citylearn_challenge_phase2_results.json"
         challenger.save_results(phase2_results, phase2_path)
-        print(f"💾 Phase 2 results saved to: {phase2_path}")
-        print("🎆 Both phases completed successfully!")
+        print(f"[SAVE] Phase 2 results saved to: {phase2_path}")
+        print("[SUCCESS] Both phases completed successfully!")
     except FileNotFoundError:
-        print("ℹ️  Phase 2 evaluation data not available - skipping")
-        print("📁 Download Phase 2 data for complete competition simulation")
+        print("[INFO] Phase 2 evaluation data not available - skipping")
+        print("[NOTE] Download Phase 2 data for complete competition simulation")
     
     # Final summary
     print("\n" + "=" * 80)
     print("SUCCESS CITYLEARN CHALLENGE EXPERIMENT COMPLETED")
     print("=" * 80)
-    print(f"🏅 Phase 1 Score: {phase1_results['overall_score']:.4f}")
-    print("📈 Check results/ directory for detailed analysis")
-    print("🚀 Ready for model deployment or further research!")
+    print(f"[SCORE] Phase 1 Score: {phase1_results['overall_score']:.4f}")
+    print("[ANALYSIS] Check results/ directory for detailed analysis")
+    print("[READY] Ready for model deployment or further research!")
     print("=" * 80)
     
     return phase1_results
