@@ -1,34 +1,32 @@
-# CityLearn Challenge 2023 - Cross-Building Generalization
+# CityLearn Challenge 2023 - Neural Network Forecasting
 
-Complete implementation of the CityLearn Challenge 2023 with cross-building generalization analysis and multiple forecasting algorithms comparison.
+Scientific neural network implementation for building energy forecasting using LSTM and Transformer architectures with cross-building generalization.
 
 ## Project Overview
 
-This project implements a comprehensive evaluation system for building energy management using the CityLearn Challenge 2023 dataset. The focus is on cross-building generalization - training models on one building and testing performance on different buildings.
+This project implements deep learning approaches for building energy consumption prediction using the CityLearn Challenge 2023 dataset. The focus is on neural networks with cross-building generalization and real training with 200+ epochs.
 
 ## Key Features
 
-- **Cross-Building Evaluation**: Train on Building 1, test on Buildings 2-3, and all combinations
-- **Multiple Algorithms**: 4 forecasting algorithms (Gaussian Process, Linear Regression, Polynomial Regression, Random Forest)
-- **3 Target Variables**: Cooling Demand, Heating Demand, Solar Generation
-- **Statistical Rigor**: Mean ± Standard Deviation aggregation across all experiments
-- **Professional Visualizations**: 5 comprehensive analysis plots
+- **Neural Networks**: LSTM and Transformer architectures for time series forecasting
+- **Complete Dataset**: 3-month dataset (June-August, 92 days) with 2208 samples per building
+- **Cross-Building Evaluation**: Train on one building, test on others for generalization
+- **Scientific Training**: Real 200+ epoch training with early stopping and learning rate scheduling
+- **Professional Visualizations**: Training curves and performance analysis
 
 ## Project Structure
 
 ```
 ├── src/
-│   ├── forecasting/          # Forecasting algorithms
-│   ├── rl/                   # Reinforcement Learning agents
-│   ├── hybrid/               # Hybrid approaches
-│   └── utils/                # Utilities
-├── data/                     # CityLearn datasets (5 phases)
+│   ├── forecasting/          # Neural network models (LSTM, Transformer)
+│   ├── utils/                # Data processing utilities
+│   └── ...
+├── data/                     # CityLearn 2023 datasets (3 phases, 3 months)
 ├── results/
-│   ├── experiments/          # Raw results (JSON)
-│   ├── reports/              # Analysis reports
-│   └── visualizations/       # Professional plots
+│   ├── neural_networks/      # Neural network results
+│   └── visualizations/       # Training curves and analysis
 ├── notebooks/                # Jupyter analysis
-└── run_cross_building_fast.py # Main execution script
+└── run_neural_evaluation.py  # Main neural network script
 ```
 
 ## Quick Start
@@ -38,37 +36,37 @@ This project implements a comprehensive evaluation system for building energy ma
    pip install -r requirements.txt
    ```
 
-2. **Run Cross-Building Evaluation**:
+2. **Run Neural Network Evaluation**:
    ```bash
-   python run_cross_building_fast.py
+   python run_neural_evaluation.py
    ```
 
 3. **View Results**:
-   - Reports: `results/reports/summary.md`
+   - Neural Results: `results/neural_networks/results.json`
    - Visualizations: `results/visualizations/`
 
-## Results Summary
+## Neural Network Architectures
 
-### Best Performing Models:
-- **COOLING_DEMAND**: Linear Regression (RMSE: 0.7701±0.2315)
-- **HEATING_DEMAND**: Random Forest (RMSE: 0.0000±0.0000)  
-- **SOLAR_GENERATION**: Gaussian Process (RMSE: 0.0000±0.0000)
+### LSTM (Long Short-Term Memory)
+- **Architecture**: 3-layer LSTM with 64 hidden units per layer
+- **Features**: Dropout regularization, Adam optimizer
+- **Training**: 200+ epochs with early stopping
+- **Sequence Length**: 24 hours (daily patterns)
 
-### Key Findings:
-- Cross-building generalization varies significantly by target variable
-- Some targets (Heating, Solar) achieve perfect prediction in specific scenarios
-- Linear models perform surprisingly well for cooling demand prediction
+### Transformer
+- **Architecture**: 4-layer encoder with multi-head attention
+- **Features**: 8 attention heads, positional encoding
+- **Training**: Advanced learning rate scheduling
+- **Benefits**: Long-range dependencies, parallel processing
 
-## Algorithms Implemented
+## Cross-Building Generalization
 
-### Forecasting Models
-- **Classical**: Random Forest, Linear Regression, Polynomial Regression, Gaussian Process
-- **Neural Networks**: LSTM, Bidirectional LSTM, ANN, ResNet, Autoencoder
-- **Advanced**: Transformer, ConvLSTM (in development)
+The project evaluates neural networks on cross-building scenarios:
+- Train on Building 1 → Test on Buildings 2, 3
+- Train on Building 2 → Test on Buildings 1, 3  
+- Train on Building 3 → Test on Buildings 1, 2
 
-### Reinforcement Learning  
-- **Q-Learning**: Tabular approach with building coordination
-- **SAC**: Soft Actor-Critic for continuous action spaces
+This tests the ability of models to generalize energy patterns across different building characteristics.
 
 ## Visualizations
 
