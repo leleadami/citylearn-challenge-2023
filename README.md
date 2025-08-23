@@ -41,8 +41,14 @@ This project implements deep learning approaches for building energy consumption
    python run_neural_evaluation.py
    ```
 
-3. **View Results**:
+3. **Run Reinforcement Learning Evaluation**:
+   ```bash
+   python run_rl_evaluation.py
+   ```
+
+4. **View Results**:
    - Neural Results: `results/neural_networks/results.json`
+   - RL Results: `results/rl_experiments/rl_results.json`
    - Visualizations: `results/visualizations/`
 
 ## Neural Network Architectures
@@ -59,14 +65,26 @@ This project implements deep learning approaches for building energy consumption
 - **Training**: Advanced learning rate scheduling
 - **Benefits**: Long-range dependencies, parallel processing
 
+## Reinforcement Learning Approaches
+
+### Q-Learning
+- **Centralized**: Single agent controls all buildings
+- **Decentralized**: Independent agents per building
+- **Features**: Epsilon-greedy exploration, Q-table learning
+
+### SAC (Soft Actor-Critic)
+- **Centralized**: Multi-building coordination
+- **Decentralized**: Building-specific control
+- **Features**: Continuous actions, entropy regularization, sample efficiency
+
 ## Cross-Building Generalization
 
-The project evaluates neural networks on cross-building scenarios:
+The project evaluates models on cross-building scenarios:
 - Train on Building 1 → Test on Buildings 2, 3
 - Train on Building 2 → Test on Buildings 1, 3  
 - Train on Building 3 → Test on Buildings 1, 2
 
-This tests the ability of models to generalize energy patterns across different building characteristics.
+This tests generalization of energy patterns across different building characteristics.
 
 ## Visualizations
 

@@ -135,7 +135,7 @@ class NeuralEvaluator:
             ]
             
             for train_building, test_buildings in combinations:
-                print(f"\\n  Train: {train_building} → Test: {test_buildings}")
+                print(f"\\n  Train: {train_building} -> Test: {test_buildings}")
                 
                 # Create training sequences
                 train_data = buildings[train_building]
