@@ -20,11 +20,13 @@ LSTM Architecture Benefits for Energy Forecasting:
 import numpy as np
 from typing import Tuple, Optional
 import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense, Dropout
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
+from keras.models import Sequential
+from keras.layers import LSTM, Dense, Dropout, Bidirectional, Conv1D
+from keras.optimizers import Adam
+from keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from .base_models import BaseForecaster
+
+
 
 
 class LSTMForecaster(BaseForecaster):
@@ -39,7 +41,7 @@ class LSTMForecaster(BaseForecaster):
     - Early stopping and learning rate reduction
     - Automatic input shape adaptation
     """
-    
+
     def __init__(self, 
                  sequence_length: int = 24,
                  hidden_units: int = 50,
@@ -79,6 +81,7 @@ class LSTMForecaster(BaseForecaster):
         Args:
             input_shape: Shape of input sequences (sequence_length, n_features)
         """
+        
         # Initialize sequential model (layers stacked in order)
         self.model = Sequential()
         
@@ -107,7 +110,7 @@ class LSTMForecaster(BaseForecaster):
         
         # Compile model with optimizer, loss function, and metrics
         self.model.compile(
-            optimizer=Adam(learning_rate=self.learning_rate),
+            optimizer=Adam(learning_rate=self.learning_rate), # type: ingnore # type: ignore
             loss='mse',
             metrics=['mae']
         )
@@ -141,21 +144,23 @@ class LSTMForecaster(BaseForecaster):
         if self.model is None:
             input_shape = (X_train.shape[1], X_train.shape[2])
             self._build_model(input_shape)
+            
+        assert self.model is not None
         
         # Setup callbacks for training optimization
         callbacks = [
             EarlyStopping(
                 monitor='loss',
-                patience=20,
+                patience=15,
                 restore_best_weights=True,
-                verbose=verbose
+                verbose=0  # Clean output
             ),
             ReduceLROnPlateau(
                 monitor='loss',
                 factor=0.5,
-                patience=10,
+                patience=8,
                 min_lr=1e-7,
-                verbose=verbose
+                verbose=0  # Clean output
             )
         ]
         
@@ -175,7 +180,7 @@ class LSTMForecaster(BaseForecaster):
             epochs=epochs,
             batch_size=batch_size,
             callbacks=callbacks,
-            verbose=verbose,
+            verbose=verbose, # type: ignore
             shuffle=True
         )
         
@@ -192,14 +197,15 @@ class LSTMForecaster(BaseForecaster):
         Returns:
             Predictions of shape (n_samples, 1)
         """
+        assert self.model is not None
         if not self.is_fitted:
             raise ValueError("Model must be fitted before making predictions")
         
         # Ensure correct input shape
         if len(X.shape) == 2:
             X = X.reshape(X.shape[0], X.shape[1], 1)
-        
-        predictions = self.model.predict(X, verbose=0)
+
+        predictions = self.model.predict(X, verbose='0')
         return predictions.flatten() if len(predictions.shape) > 1 else predictions
 
 
@@ -228,7 +234,7 @@ class BidirectionalLSTMForecaster(BaseForecaster):
         
     def _build_model(self, input_shape: Tuple[int, int]) -> None:
         """Build bidirectional LSTM architecture."""
-        from tensorflow.keras.layers import Bidirectional
+        from keras.layers import Bidirectional
         
         self.model = Sequential()
         
@@ -255,7 +261,7 @@ class BidirectionalLSTMForecaster(BaseForecaster):
         
         # Compile model
         self.model.compile(
-            optimizer=Adam(learning_rate=self.learning_rate),
+            optimizer=Adam(learning_rate=self.learning_rate), # type: ignore
             loss='mse',
             metrics=['mae']
         )
@@ -277,10 +283,12 @@ class BidirectionalLSTMForecaster(BaseForecaster):
         if self.model is None:
             input_shape = (X_train.shape[1], X_train.shape[2])
             self._build_model(input_shape)
+            
+        assert self.model is not None
         
         callbacks = [
-            EarlyStopping(monitor='loss', patience=20, restore_best_weights=True),
-            ReduceLROnPlateau(monitor='loss', factor=0.5, patience=10, min_lr=1e-7)
+            EarlyStopping(monitor='loss', patience=15, restore_best_weights=True, verbose=0),
+            ReduceLROnPlateau(monitor='loss', factor=0.5, patience=8, min_lr=1e-7, verbose=0)
         ]
         
         validation_data = None
@@ -297,7 +305,7 @@ class BidirectionalLSTMForecaster(BaseForecaster):
             epochs=epochs,
             batch_size=batch_size,
             callbacks=callbacks,
-            verbose=verbose,
+            verbose=str(verbose),
             shuffle=True
         )
         
@@ -306,13 +314,14 @@ class BidirectionalLSTMForecaster(BaseForecaster):
     
     def predict(self, X: np.ndarray) -> np.ndarray:
         """Generate predictions using bidirectional LSTM."""
+        assert self.model is not None
         if not self.is_fitted:
             raise ValueError("Model must be fitted before making predictions")
         
         if len(X.shape) == 2:
             X = X.reshape(X.shape[0], X.shape[1], 1)
         
-        predictions = self.model.predict(X, verbose=0)
+        predictions = self.model.predict(X, verbose='0')
         return predictions.flatten() if len(predictions.shape) > 1 else predictions
 
 
@@ -343,7 +352,7 @@ class ConvLSTMForecaster(BaseForecaster):
         
     def _build_model(self, input_shape: Tuple[int, int]) -> None:
         """Build CNN-LSTM hybrid architecture."""
-        from tensorflow.keras.layers import Conv1D, MaxPooling1D, Flatten
+        from keras.layers import Conv1D, MaxPooling1D, Flatten
         
         self.model = Sequential()
         
@@ -380,7 +389,7 @@ class ConvLSTMForecaster(BaseForecaster):
         
         # Compile model
         self.model.compile(
-            optimizer=Adam(learning_rate=self.learning_rate),
+            optimizer=Adam(learning_rate=self.learning_rate), # type: ignore
             loss='mse',
             metrics=['mae']
         )
@@ -402,10 +411,12 @@ class ConvLSTMForecaster(BaseForecaster):
         if self.model is None:
             input_shape = (X_train.shape[1], X_train.shape[2])
             self._build_model(input_shape)
+            
+        assert self.model is not None
         
         callbacks = [
-            EarlyStopping(monitor='loss', patience=20, restore_best_weights=True),
-            ReduceLROnPlateau(monitor='loss', factor=0.5, patience=10, min_lr=1e-7)
+            EarlyStopping(monitor='loss', patience=15, restore_best_weights=True, verbose=0),
+            ReduceLROnPlateau(monitor='loss', factor=0.5, patience=8, min_lr=1e-7, verbose=0)
         ]
         
         validation_data = None
@@ -422,7 +433,7 @@ class ConvLSTMForecaster(BaseForecaster):
             epochs=epochs,
             batch_size=batch_size,
             callbacks=callbacks,
-            verbose=verbose,
+            verbose=str(verbose),
             shuffle=True
         )
         
@@ -431,11 +442,12 @@ class ConvLSTMForecaster(BaseForecaster):
     
     def predict(self, X: np.ndarray) -> np.ndarray:
         """Generate predictions using ConvLSTM."""
+        assert self.model is not None
         if not self.is_fitted:
             raise ValueError("Model must be fitted before making predictions")
         
         if len(X.shape) == 2:
             X = X.reshape(X.shape[0], X.shape[1], 1)
         
-        predictions = self.model.predict(X, verbose=0)
+        predictions = self.model.predict(X, verbose='0')
         return predictions.flatten() if len(predictions.shape) > 1 else predictions

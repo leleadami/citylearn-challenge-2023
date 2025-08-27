@@ -30,6 +30,7 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from typing import Dict, Tuple, List, Optional
 import os
 
@@ -260,6 +261,8 @@ def prepare_forecasting_data(building_data: Dict[str, pd.DataFrame],
             continue
             
         target_data = df[target_column].values
+        # Convert to numpy array to avoid ExtensionArray issues
+        target_data = np.asarray(target_data, dtype=np.float32)
         
         # Create sequences using sliding window approach
         # This transforms continuous time series into supervised learning format
@@ -291,6 +294,7 @@ def prepare_forecasting_data(building_data: Dict[str, pd.DataFrame],
             # Fit scalers ONLY on training data to avoid data leakage
             # Reshape for sklearn: (n_samples * sequence_length, n_features)
             # For univariate time series, n_features = 1
+            assert scaler_X is not None and scaler_y is not None
             X_train_scaled = scaler_X.fit_transform(X_train.reshape(-1, X_train.shape[-1]))
             X_train_scaled = X_train_scaled.reshape(X_train.shape)
             
@@ -424,7 +428,7 @@ def calculate_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, float
         >>> metrics = calculate_metrics(y_true, y_pred)
         >>> print(f"RMSE: {metrics['rmse']:.2f} kWh")
     """
-    from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+    # Import already handled at module level
     
     # Flatten arrays if multidimensional (e.g., multi-step forecasts)
     # This ensures metrics are calculated across all predictions
@@ -548,6 +552,8 @@ def cross_building_split(building_data: Dict[str, pd.DataFrame],
             continue
             
         train_target = train_df[target_column].values
+        # Convert to numpy array to avoid ExtensionArray issues
+        train_target = np.asarray(train_target, dtype=np.float32)
         X_train, y_train = create_sequences(train_target, sequence_length)
         
         # Prepare test data from all other buildings (target buildings)
@@ -562,6 +568,8 @@ def cross_building_split(building_data: Dict[str, pd.DataFrame],
                     continue
                     
                 test_target = test_df[target_column].values
+                # Convert to numpy array to avoid ExtensionArray issues
+                test_target = np.asarray(test_target, dtype=np.float32)
                 X_test, y_test = create_sequences(test_target, sequence_length)
                 
                 # Store test data for this target building
@@ -696,3 +704,161 @@ def aggregate_neighborhood_data(building_data: Dict[str, pd.DataFrame],
     # Create DataFrame with aggregated neighborhood data
     # Maintains same temporal structure as original building data
     return pd.DataFrame(neighborhood_data)
+
+
+def create_time_features(data: pd.DataFrame, time_column: Optional[str] = None) -> pd.DataFrame:
+    """
+    Create time-based features from timestamp for energy forecasting.
+    
+    Time features are crucial for energy forecasting as they capture:
+    - Daily patterns (hour of day)
+    - Weekly patterns (day of week, weekends)
+    - Seasonal patterns (month, season)
+    - Cyclical behaviors in building energy consumption
+    
+    Args:
+        data: DataFrame with time series data
+        time_column: Name of timestamp column (auto-detect if None)
+        
+    Returns:
+        DataFrame with additional time features
+    """
+    df = data.copy()
+    
+    # Auto-detect time column if not specified
+    if time_column is None:
+        time_cols = [col for col in df.columns if 'time' in col.lower() or 'date' in col.lower()]
+        if time_cols:
+            time_column = time_cols[0]
+        else:
+            # Create simple hour feature if no timestamp found
+            df['hour'] = range(len(df))
+            df['hour'] = df['hour'] % 24
+            return df
+    
+    # Convert to datetime if not already
+    if time_column in df.columns:
+        df[time_column] = pd.to_datetime(df[time_column])
+        dt_col = df[time_column]
+    else:
+        # Create synthetic datetime index
+        dt_col = pd.date_range(start='2023-01-01', periods=len(df), freq='H')
+    
+    # Create time-based features
+    df['hour'] = dt_col.hour
+    df['day_of_week'] = dt_col.dayofweek
+    df['month'] = dt_col.month
+    df['is_weekend'] = (dt_col.dayofweek >= 5).astype(int)
+    
+    # Cyclical features (sine/cosine encoding)
+    df['hour_sin'] = np.sin(2 * np.pi * df['hour'] / 24)
+    df['hour_cos'] = np.cos(2 * np.pi * df['hour'] / 24)
+    df['day_sin'] = np.sin(2 * np.pi * df['day_of_week'] / 7)
+    df['day_cos'] = np.cos(2 * np.pi * df['day_of_week'] / 7)
+    df['month_sin'] = np.sin(2 * np.pi * df['month'] / 12)
+    df['month_cos'] = np.cos(2 * np.pi * df['month'] / 12)
+    
+    return df
+
+
+def normalize_energy_data(data: np.ndarray, method: str = 'standard') -> Tuple[np.ndarray, object]:
+    """
+    Normalize energy data for machine learning models.
+    
+    Args:
+        data: Energy data to normalize
+        method: Normalization method ('standard', 'minmax', 'robust')
+        
+    Returns:
+        Tuple of (normalized_data, scaler)
+    """
+    if method == 'standard':
+        scaler = StandardScaler()
+    elif method == 'minmax':
+        scaler = MinMaxScaler()
+    elif method == 'robust':
+        from sklearn.preprocessing import RobustScaler
+        scaler = RobustScaler()
+    else:
+        raise ValueError(f"Unknown normalization method: {method}")
+    
+    if len(data.shape) == 1:
+        data = data.reshape(-1, 1)
+    
+    normalized = scaler.fit_transform(data)
+    
+    return normalized.flatten() if normalized.shape[1] == 1 else normalized, scaler
+
+
+def load_phase_data(phase_name: str, data_path: str = "data") -> Dict[str, pd.DataFrame]:
+    """
+    Load data from a specific CityLearn phase.
+    
+    Args:
+        phase_name: Name of the phase directory
+        data_path: Base data directory path
+        
+    Returns:
+        Dictionary with loaded data
+    """
+    phase_path = os.path.join(data_path, phase_name)
+    phase_data = {}
+    
+    if not os.path.exists(phase_path):
+        print(f"Warning: Phase directory {phase_path} not found")
+        return phase_data
+    
+    # Load building files
+    for filename in os.listdir(phase_path):
+        if filename.endswith('.csv'):
+            file_path = os.path.join(phase_path, filename)
+            file_key = filename.replace('.csv', '')
+            
+            try:
+                df = pd.read_csv(file_path)
+                df = create_time_features(df)
+                phase_data[file_key] = df
+                print(f"Loaded {file_key}: {len(df)} samples")
+            except Exception as e:
+                print(f"Error loading {filename}: {e}")
+    
+    return phase_data
+
+
+def get_energy_statistics(building_data: Dict[str, pd.DataFrame]) -> Dict[str, Dict]:
+    """
+    Calculate comprehensive statistics for energy data.
+    
+    Args:
+        building_data: Dictionary of building dataframes
+        
+    Returns:
+        Dictionary with statistics for each building
+    """
+    statistics = {}
+    
+    for building_name, df in building_data.items():
+        if not building_name.startswith('Building_'):
+            continue
+            
+        building_stats = {}
+        
+        # Find energy columns
+        energy_cols = [col for col in df.columns if any(keyword in col.lower() 
+                      for keyword in ['demand', 'load', 'generation', 'consumption'])]
+        
+        for col in energy_cols:
+            if col in df.columns:
+                building_stats[col] = {
+                    'mean': df[col].mean(),
+                    'std': df[col].std(),
+                    'min': df[col].min(),
+                    'max': df[col].max(),
+                    'median': df[col].median(),
+                    'missing_count': df[col].isnull().sum(),
+                    'missing_percent': (df[col].isnull().sum() / len(df)) * 100
+                }
+        
+        statistics[building_name] = building_stats
+    
+    return statistics

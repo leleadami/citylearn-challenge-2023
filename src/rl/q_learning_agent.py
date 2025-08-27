@@ -100,7 +100,7 @@ class QLearningAgent:
             for action in range(self.action_bins)
         ]
         
-        return np.argmax(q_values)
+        return int(np.argmax(q_values))
     
     def update_q_table(self, state: np.ndarray, action: int, 
                        reward: float, next_state: np.ndarray) -> float:

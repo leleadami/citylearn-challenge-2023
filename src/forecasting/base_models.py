@@ -19,6 +19,11 @@ The BaseForecaster class standardizes the interface for:
 import numpy as np
 from typing import Optional, Tuple, Any, Dict
 from abc import ABC, abstractmethod
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LinearRegression
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.pipeline import Pipeline
 
 
 class BaseForecaster(ABC):
@@ -123,15 +128,15 @@ class BaseForecaster(ABC):
 # Import note for users of this module
 # ====================================
 # 
-# Specific forecasting models have been moved to separate files for better organization:
+# Available forecasting models are organized in separate files:
 #
 # from .lstm_models import LSTMForecaster, BidirectionalLSTMForecaster, ConvLSTMForecaster
-# from .neural_models import ANNForecaster, ResNetForecaster, AutoencoderForecaster  
-# from .classical_models import RandomForestForecaster, LinearForecaster, PolynomialForecaster, GaussianForecaster
 # from .transformer_models import TransformerForecaster, TimesFMInspiredForecaster
+# from .base_models import get_baseline_forecasters  # For Random Forest, Linear, etc.
 #
-# Or use the convenient imports from the main forecasting module:
-# from src.forecasting import LSTMForecaster, RandomForestForecaster, etc.
+# Or use the factory function:
+# model = create_forecaster('lstm', hidden_units=64)
+# baseline_models = get_baseline_forecasters()
 
 
 def create_forecaster(model_type: str, **kwargs) -> BaseForecaster:
@@ -166,41 +171,20 @@ def create_forecaster(model_type: str, **kwargs) -> BaseForecaster:
             elif model_type == 'conv_lstm':
                 return ConvLSTMForecaster(**kwargs)
                 
-        elif model_type in ['ann', 'resnet', 'autoencoder']:
-            from .neural_models import ANNForecaster, ResNetForecaster, AutoencoderForecaster
-            if model_type == 'ann':
-                return ANNForecaster(**kwargs)
-            elif model_type == 'resnet':
-                return ResNetForecaster(**kwargs)
-            elif model_type == 'autoencoder':
-                return AutoencoderForecaster(**kwargs)
-                
-        elif model_type in ['random_forest', 'linear', 'polynomial', 'gaussian', 'svr']:
-            from .classical_models import (RandomForestForecaster, LinearForecaster, 
-                                         PolynomialForecaster, GaussianForecaster, SVRForecaster)
-            if model_type == 'random_forest':
-                return RandomForestForecaster(**kwargs)
-            elif model_type == 'linear':
-                return LinearForecaster(**kwargs)
-            elif model_type == 'polynomial':
-                return PolynomialForecaster(**kwargs)
-            elif model_type == 'gaussian':
-                return GaussianForecaster(**kwargs)
-            elif model_type == 'svr':
-                return SVRForecaster(**kwargs)
-                
         elif model_type in ['transformer', 'timesfm']:
             from .transformer_models import TransformerForecaster, TimesFMInspiredForecaster
             if model_type == 'transformer':
                 return TransformerForecaster(**kwargs)
             elif model_type == 'timesfm':
                 return TimesFMInspiredForecaster(**kwargs)
-                
-        else:
-            raise ValueError(f"Unknown model type: {model_type}")
+        
+        # Se arriviamo qui, il model_type non è riconosciuto
+        raise ValueError(f"Unknown model type: {model_type}")
             
     except ImportError as e:
         raise ImportError(f"Could not import {model_type} model. Make sure required dependencies are installed: {e}")
+    except Exception as e:
+        raise RuntimeError(f"Error creating model {model_type}: {e}")
 
 
 def get_available_models() -> Dict[str, list]:
@@ -212,7 +196,65 @@ def get_available_models() -> Dict[str, list]:
     """
     return {
         'lstm': ['lstm', 'bidirectional_lstm', 'conv_lstm'],
-        'neural': ['ann', 'resnet', 'autoencoder'],
-        'classical': ['random_forest', 'linear', 'polynomial', 'gaussian', 'svr'],
-        'transformer': ['transformer', 'timesfm']
+        'transformer': ['transformer', 'timesfm'],
+        'baseline': ['random_forest', 'linear_regression', 'polynomial_regression', 'gaussian_process']
+    }
+
+
+class SklearnForecaster(BaseForecaster):
+    """Wrapper for sklearn models to work with time series forecasting."""
+    
+    def __init__(self, name: str, model):
+        super().__init__(name)
+        self.model = model
+        
+    def fit(self, X_train: np.ndarray, y_train: np.ndarray, 
+            X_val: Optional[np.ndarray] = None, y_val: Optional[np.ndarray] = None, **kwargs) -> None:
+        """Train sklearn model on flattened sequences."""
+        # Flatten sequences for sklearn models
+        X_flat = X_train.reshape(X_train.shape[0], -1)
+        y_flat = y_train.flatten() if len(y_train.shape) > 1 else y_train
+        
+        self.model.fit(X_flat, y_flat)
+        self.is_fitted = True
+        
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """Generate predictions using sklearn model."""
+        if not self.is_fitted:
+            raise ValueError(f"{self.name} model must be fitted before prediction")
+            
+        X_flat = X.reshape(X.shape[0], -1)
+        predictions = self.model.predict(X_flat)
+        
+        # Return as 2D array for consistency
+        return predictions.reshape(-1, 1) if len(predictions.shape) == 1 else predictions
+
+
+def get_baseline_forecasters() -> Dict[str, BaseForecaster]:
+    """
+    Get collection of baseline forecasting models for comparison.
+    
+    Returns:
+        Dict[str, BaseForecaster]: Dictionary of baseline models
+    """
+    return {
+        'Random_Forest': SklearnForecaster(
+            'Random_Forest',
+            RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1)
+        ),
+        'Linear_Regression': SklearnForecaster(
+            'Linear_Regression', 
+            LinearRegression()
+        ),
+        'Polynomial_Regression': SklearnForecaster(
+            'Polynomial_Regression',
+            Pipeline([
+                ('poly', PolynomialFeatures(degree=2)),
+                ('linear', LinearRegression())
+            ])
+        ),
+        'Gaussian_Process': SklearnForecaster(
+            'Gaussian_Process',
+            GaussianProcessRegressor(random_state=42)
+        )
     }

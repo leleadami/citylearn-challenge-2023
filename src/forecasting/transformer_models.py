@@ -34,12 +34,15 @@ Why Transformers Excel for Building Energy Forecasting:
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from tensorflow.keras import layers, Model, Input
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 import math
 from typing import Tuple, Optional
 import joblib
+
+# Keras 3 native imports (compatible with TensorFlow 2.16+)
+from keras import layers, Model, Input, Sequential
+from keras.optimizers import Adam
+from keras.callbacks import EarlyStopping, ReduceLROnPlateau
+
 from .base_models import BaseForecaster
 
 
@@ -158,7 +161,7 @@ class MultiHeadAttention(layers.Layer):
             output: Attended representation for energy forecasting
             attention_weights: Interpretable attention patterns
         """
-        batch_size = tf.shape(q)[0]
+        batch_size = tf.shape(q)[0]   # type: ignore
         
         # Apply linear projections to create query, key, value representations
         q = self.wq(q)  # Query: "What energy pattern to predict?"
@@ -223,7 +226,7 @@ class MultiHeadAttention(layers.Layer):
         matmul_qk = tf.matmul(q, k, transpose_b=True)  # (..., seq_len_q, seq_len_k)
         
         # Scale by square root of key dimension to prevent vanishing gradients
-        dk = tf.cast(tf.shape(k)[-1], tf.float32)
+        dk = tf.cast(tf.shape(k)[-1], tf.float32)  # type: ignore
         scaled_attention_logits = matmul_qk / tf.math.sqrt(dk)
         
         # Apply mask if provided (e.g., causal masking for autoregressive prediction)
@@ -379,7 +382,7 @@ class PositionalEncoding(layers.Layer):
         """
         # Add positional encoding to input embeddings
         # Slice encoding to match current sequence length
-        return x + self.pos_encoding[:, :tf.shape(x)[1], :]
+        return x + self.pos_encoding[:, :tf.shape(x)[1], :] # type: ignore
 
 
 class TransformerBlock(layers.Layer):
@@ -469,7 +472,7 @@ class TransformerBlock(layers.Layer):
         Returns:
             Sequential feed-forward network
         """
-        return tf.keras.Sequential([
+        return Sequential([
             layers.Dense(dff, activation='relu', name="ffn_expansion"),   # Expand and activate
             layers.Dense(d_model, name="ffn_compression")                 # Compress back
         ], name="feed_forward_network")
@@ -628,7 +631,7 @@ class TimeSeriesTransformer(layers.Layer):
             Encoded representations (batch_size, seq_len, d_model)
             Ready for forecasting head or downstream tasks
         """
-        seq_len = tf.shape(x)[1]
+        seq_len = tf.shape(x)[1] # type: ignore
         
         # Step 1: Input embedding and positional encoding
         x = self.embedding(x)  # Project to model dimension
@@ -813,7 +816,7 @@ class TransformerForecaster(BaseForecaster):
         
         # Compile with energy forecasting objectives
         self.model.compile(
-            optimizer=Adam(
+            optimizer=Adam(  # type: ignore
                 learning_rate=self.learning_rate,
                 beta_1=0.9,      # Momentum for smooth convergence
                 beta_2=0.999,    # Second moment estimation
@@ -907,12 +910,13 @@ class TransformerForecaster(BaseForecaster):
         ]
         
         # Train transformer on energy consumption patterns
+        assert self.model is not None, "Model should be built at this point"
         self.model.fit(
             X_train, y_train,
             validation_data=validation_data,
             epochs=epochs,
             batch_size=batch_size,
-            verbose=verbose,
+            verbose=str(verbose),
             callbacks=callbacks
         )
         
@@ -973,6 +977,7 @@ class TransformerForecaster(BaseForecaster):
             X = X.reshape(X.shape[0], X.shape[1], 1)
         
         # Generate energy forecasts using learned attention patterns
+        assert self.model is not None, "Model must be fitted before making predictions"
         predictions = self.model.predict(X)
         
         # Handle single-step prediction case
@@ -998,7 +1003,7 @@ class TransformerForecaster(BaseForecaster):
             filepath: Path to save the complete model
         """
         if self.model is not None:
-            self.model.save(filepath)
+            self.model.save_weights(filepath)
     
     def load_model(self, filepath: str) -> None:
         """
@@ -1010,12 +1015,13 @@ class TransformerForecaster(BaseForecaster):
         Args:
             filepath: Path to the saved transformer model
         """
-        self.model = tf.keras.models.load_model(filepath, custom_objects={
-            'TimeSeriesTransformer': TimeSeriesTransformer,
-            'TransformerBlock': TransformerBlock,
-            'MultiHeadAttention': MultiHeadAttention,
-            'PositionalEncoding': PositionalEncoding
-        })
+        # Build model if not already built
+        if self.model is None:
+            self._build_model((self.sequence_length, 1))
+        
+        # Load the weights
+        assert self.model is not None
+        self.model.load_weights(filepath)
         self.is_fitted = True
 
 
@@ -1157,9 +1163,9 @@ class TimesFMInspiredForecaster(BaseForecaster):
         Returns:
             Patched sequences (batch_size, num_patches, patch_size * features)
         """
-        batch_size = tf.shape(x)[0]
-        seq_len = tf.shape(x)[1]
-        features = tf.shape(x)[2]
+        batch_size = tf.shape(x)[0]  # type: ignore
+        seq_len = tf.shape(x)[1]  # type: ignore
+        features = tf.shape(x)[2]  # type: ignore
         
         # Calculate required padding for even patch division
         padded_len = ((seq_len + self.patch_size - 1) // self.patch_size) * self.patch_size
@@ -1287,17 +1293,14 @@ class TimesFMInspiredForecaster(BaseForecaster):
             name='TimesFMEnergyForecaster'
         )
         
-        # Foundation model optimizer configuration
-        optimizer = Adam(
-            learning_rate=self.learning_rate,   # Conservative for foundation model
-            beta_1=0.9,                        # Standard momentum
-            beta_2=0.999,                      # Standard second moment
-            epsilon=1e-8                       # Numerical stability
-        )
-        
         # Compile with robust loss function
         self.model.compile(
-            optimizer=optimizer,
+            optimizer=Adam(  # type: ignore
+                learning_rate=self.learning_rate,   # Conservative for foundation model
+                beta_1=0.9,                        # Standard momentum
+                beta_2=0.999,                      # Standard second moment
+                epsilon=1e-8                       # Numerical stability
+            ),
             loss='huber',                      # Robust to energy data outliers
             metrics=['mae']                    # Interpretable energy error metric
         )
@@ -1329,12 +1332,13 @@ class TimesFMInspiredForecaster(BaseForecaster):
             ReduceLROnPlateau(factor=0.3, patience=10, min_lr=1e-8, monitor='val_loss')
         ]
         
+        assert self.model is not None, "Model should be built at this point"
         self.model.fit(
             X_train, y_train,
             validation_data=validation_data,
             epochs=epochs,
             batch_size=batch_size,
-            verbose=verbose,
+            verbose=str(verbose),
             callbacks=callbacks
         )
         
@@ -1348,6 +1352,7 @@ class TimesFMInspiredForecaster(BaseForecaster):
         if len(X.shape) == 2:
             X = X.reshape(X.shape[0], X.shape[1], 1)
         
+        assert self.model is not None, "Model must be fitted before making predictions"
         predictions = self.model.predict(X)
         
         if self.prediction_horizon == 1:
@@ -1358,16 +1363,17 @@ class TimesFMInspiredForecaster(BaseForecaster):
     def save_model(self, filepath: str) -> None:
         """Save TimesFM model."""
         if self.model is not None:
-            self.model.save(filepath)
+            self.model.save_weights(filepath)
     
     def load_model(self, filepath: str) -> None:
         """Load TimesFM model."""
-        self.model = tf.keras.models.load_model(filepath, custom_objects={
-            'TimeSeriesTransformer': TimeSeriesTransformer,
-            'TransformerBlock': TransformerBlock,
-            'MultiHeadAttention': MultiHeadAttention,
-            'PositionalEncoding': PositionalEncoding
-        })
+        # Build model if not already built
+        if self.model is None:
+            self._build_model((self.sequence_length, 1))
+        
+        # Load the weights
+        assert self.model is not None
+        self.model.load_weights(filepath)
         self.is_fitted = True
 
 
