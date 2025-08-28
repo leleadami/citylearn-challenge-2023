@@ -307,18 +307,9 @@ class RLEvaluator:
         return results
     
     def create_rl_visualizations(self):
-        """Create comprehensive RL visualizations."""
-        print("\nGenerazione visualizzazioni RL...")
-        
-        if not self.results:
-            print("Warning: No results to visualize")
-            return
-        
-        # Use visualization utilities
-        from src.utils.visualization import create_complete_rl_evaluation_charts
-        create_complete_rl_evaluation_charts(self.results)
-        
-        print("Visualizzazioni RL complete usando utilities!")
+        """RL visualizations non richieste dal professore."""
+        print("\n[RL] Visualizzazioni non richieste dal professore - saltate")
+        print("     (Solo tabella richiesta - riga 19 prompt.txt)")
     
     def save_results(self):
         """Save RL evaluation results to JSON file."""

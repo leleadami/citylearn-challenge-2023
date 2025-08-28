@@ -27,13 +27,13 @@ from src.forecasting.lstm_models import (
     BidirectionalLSTMForecaster, 
     ConvLSTMForecaster
 )
-from src.forecasting.transformer_models import (
-    TransformerForecaster, 
-    TimesFMInspiredForecaster
+from src.forecasting.simple_transformer import (
+    SimpleTransformerForecaster, 
+    SimpleTimesFMForecaster
 )
 from src.forecasting.base_models import get_baseline_forecasters
 from src.utils.data_utils import calculate_metrics, create_time_features
-from src.utils.visualization import create_comparison_plots, save_training_plots
+# Visualization utilities sono ora integrate in thesis_plots
 
 
 class ComprehensiveNeuralEvaluator:
@@ -45,7 +45,7 @@ class ComprehensiveNeuralEvaluator:
         self.training_histories = {}
         self.model_instances = {}
         
-        # Complete neural network model collection
+        # Modelli neurali richiesti dal professore
         self.neural_models = {
             'LSTM': LSTMForecaster(
                 sequence_length=24,
@@ -54,37 +54,22 @@ class ComprehensiveNeuralEvaluator:
                 dropout_rate=0.2,
                 learning_rate=0.001
             ),
-            'Bidirectional_LSTM': BidirectionalLSTMForecaster(
+            'Transformer': SimpleTransformerForecaster(
                 sequence_length=24,
-                hidden_units=50,
+                d_model=64,
+                num_heads=4,
                 num_layers=2,
-                dropout_rate=0.2,
+                dropout_rate=0.1,
                 learning_rate=0.001
             ),
-            'ConvLSTM': ConvLSTMForecaster(
+            'TimesFM': SimpleTimesFMForecaster(
                 sequence_length=24,
-                filters=32,
-                kernel_size=3,
-                lstm_units=50,
-                dropout_rate=0.2,
-                learning_rate=0.001
-            ),
-            # 'Transformer': TransformerForecaster(  # Disabilitato: errori complessi con mask
-            #     sequence_length=24,
-            #     d_model=64,
-            #     num_heads=8,
-            #     num_layers=4,
-            #     dropout_rate=0.1,
-            #     learning_rate=0.001
-            # ),
-            # 'TimesFM': TimesFMInspiredForecaster(  # Modelli disabilitati: richiedono fix complessi
-            #     sequence_length=24,
-            #     d_model=128,
-            #     num_heads=8,
-            #     num_layers=6,
-            #     patch_size=4,
-            #     learning_rate=0.0001
-            # )
+                d_model=128,
+                num_heads=8,
+                num_layers=3,
+                patch_size=4,
+                learning_rate=0.0001
+            )
         }
         
         # Baseline models for comprehensive comparison
@@ -238,6 +223,80 @@ class ComprehensiveNeuralEvaluator:
         
         return np.array(X), np.array(y)
     
+    def create_neighborhood_sequences(self, buildings_data: Dict[str, pd.DataFrame], target: str, seq_len: int = 24):
+        """Crea sequenze per aggregazione neighborhood (3 buildings)."""
+        print(f"[NEIGHBORHOOD] Creazione sequenze aggregate per {target}...")
+        
+        # Carica dati dei 3 buildings
+        building_names = ['Building_1', 'Building_2', 'Building_3']
+        combined_data = []
+        
+        for building_name in building_names:
+            if building_name in buildings_data:
+                data = buildings_data[building_name]
+                print(f"  {building_name}: {len(data)} campioni")
+                combined_data.append(data)
+        
+        if not combined_data:
+            print("  Errore: nessun dato building trovato per neighborhood")
+            return np.array([]), np.array([])
+        
+        # Prende la lunghezza minima per allineamento temporale
+        min_length = min(len(data) for data in combined_data)
+        print(f"  Lunghezza minima allineata: {min_length}")
+        
+        # Crea features aggregate
+        aggregated_features = []
+        aggregated_targets = []
+        
+        for i in range(min_length):
+            # Caratteristiche temporali dal primo building (sono uguali per tutti)
+            time_features = [
+                combined_data[0].iloc[i]['hour'],
+                combined_data[0].iloc[i]['month']
+            ]
+            
+            # Aggrega features da tutti i buildings
+            building_features = []
+            building_targets = []
+            
+            for data in combined_data:
+                row = data.iloc[i]
+                building_features.extend([
+                    row['indoor_dry_bulb_temperature'],
+                    row['indoor_relative_humidity'],
+                    row['non_shiftable_load'],
+                    row['occupant_count']
+                ])
+                building_targets.append(row[target])
+            
+            # Combina time features + building features
+            all_features = time_features + building_features
+            aggregated_features.append(all_features)
+            
+            # Target aggregato (somma per neighborhood)
+            aggregated_targets.append(sum(building_targets))
+        
+        # Converte in numpy array
+        feature_data = np.array(aggregated_features)
+        target_data = np.array(aggregated_targets)
+        
+        # Crea sequenze temporali
+        X, y = [], []
+        for i in range(seq_len, len(feature_data)):
+            # Sequenza di features per predizione
+            sequence = feature_data[i-seq_len:i]
+            X.append(sequence)
+            y.append(target_data[i])
+        
+        X = np.array(X)
+        y = np.array(y)
+        
+        print(f"  Sequenze neighborhood create: X={X.shape}, y={y.shape}")
+        print(f"  Target aggregato stats: min={y.min():.2f}, max={y.max():.2f}, media={y.mean():.2f}")
+        
+        return X, y
+    
     def train_model_professional(self, model, X_train, y_train, X_val, y_val, 
                                 model_name: str, target: str, epochs: int = 50):
         """Train model with professional configuration and monitoring."""
@@ -246,10 +305,11 @@ class ComprehensiveNeuralEvaluator:
         print(f"  Validation sequences: {len(X_val)}")
         print(f"  Sequence shape: {X_train.shape}")
         
-        # Different epochs for different model types
+        # Adjust epochs for different model types
         if 'transformer' in model_name.lower() or 'timesfm' in model_name.lower():
-            epochs = min(epochs, 20)  # Reduce epochs for Transformer models to speed up training
-        elif 'baseline' in model_name.lower() or 'random_forest' in model_name.lower():
+            epochs = min(epochs, 15)  # Reduce epochs for Transformer models to speed up training
+        
+        if 'baseline' in model_name.lower() or 'random_forest' in model_name.lower() or 'gaussian_process' in model_name.lower() or 'ann' in model_name.lower():
             # Baseline models don't need epochs
             if hasattr(model, 'fit'):
                 # Flatten sequences for non-neural models
@@ -259,7 +319,7 @@ class ComprehensiveNeuralEvaluator:
             else:
                 print(f"  {model_name} is not a trainable model")
         else:
-            # Neural network training with proper monitoring
+            # Neural network training with proper monitoring (LSTM, Transformer, TimesFM)
             print(f"  Starting {model_name} training...")
             print(f"  Data shapes - X: {X_train.shape}, y: {y_train.shape}")
             
@@ -291,75 +351,159 @@ class ComprehensiveNeuralEvaluator:
         return model
     
     def evaluate_cross_building(self):
-        """Main evaluation function."""
+        """Funzione principale di valutazione."""
         print("\n" + "="*80)
         print("NEURAL NETWORK EVALUATION - CITYLEARN 2023")
-        print("LSTM and Transformer with 3-month dataset")
+        print("LSTM, ANN, Gaussian e baseline - cooling_demand + solar_generation")
         print("="*80)
         
         buildings = self.load_complete_dataset()
-        target = 'cooling_demand'  # Focus on meaningful variance
+        # Valuta cooling demand, solar generation e neighborhood aggregation come richiesto dal professore
+        targets = ['cooling_demand', 'solar_generation', 'neighborhood_cooling', 'neighborhood_solar']
         
-        print(f"\n[TARGET] {target}")
+        print(f"\n[TARGETS] {targets}")
         
         results = {}
         
-        for model_name, model in self.all_models.items():
-            print(f"\n[MODEL] {model_name}")
-            model_results = {}
+        # Itera su entrambi i target
+        for target in targets:
+            print(f"\n{'='*60}")
+            print(f"EVALUATING TARGET: {target.upper()}")
+            print('='*60)
             
-            # Cross-building combinations
-            combinations = [
-                ('Building_1', ['Building_2', 'Building_3']),
-                ('Building_2', ['Building_1', 'Building_3']),
-                ('Building_3', ['Building_1', 'Building_2'])
-            ]
+            target_results = {}
             
-            for train_building, test_buildings in combinations:
-                print(f"\n  Train: {train_building} -> Test: {test_buildings}")
+            for model_name, model in self.all_models.items():
+                print(f"\n[MODEL] {model_name} per {target}")
+                model_results = {}
                 
-                # Create training sequences
-                train_data = buildings[train_building]
-                X_full, y_full, features = self.create_enhanced_sequences(train_data, target)
+                # Cross-building combinations
+                combinations = [
+                    ('Building_1', ['Building_2', 'Building_3']),
+                    ('Building_2', ['Building_1', 'Building_3']),
+                    ('Building_3', ['Building_1', 'Building_2'])
+                ]
                 
-                # 80/20 split
-                split = int(len(X_full) * 0.8)
-                X_train, X_val = X_full[:split], X_full[split:]
-                y_train, y_val = y_full[:split], y_full[split:]
-                
-                # Train model
-                trained_model = self.train_model_professional(
-                    model, X_train, y_train, X_val, y_val, model_name, target
-                )
-                
-                # Skip if training failed
-                if trained_model is None:
-                    print(f"    Skipping {train_building} - training failed")
-                    model_results[train_building] = {}
-                    continue
-                
-                # Test on each building
-                building_results = {}
-                for test_building in test_buildings:
-                    print(f"    Testing on {test_building}...")
-                    test_data = buildings[test_building]
-                    X_test, y_test, _ = self.create_enhanced_sequences(test_data, target)
+                # Gestione diversa per neighborhood vs single building targets
+                if target.startswith('neighborhood_'):
+                    # Target neighborhood: usa tutti i buildings aggregati
+                    base_target = target.replace('neighborhood_', '')  # 'cooling' -> 'cooling_demand'
+                    if base_target == 'cooling':
+                        base_target = 'cooling_demand'
+                    elif base_target == 'solar':
+                        base_target = 'solar_generation'
                     
+                    print(f"\n  Neighborhood aggregation per {base_target}")
+                    X_full, y_full = self.create_neighborhood_sequences(buildings, base_target)
+                    
+                    if len(X_full) == 0:
+                        print("  Skipping - no neighborhood data")
+                        continue
+                    
+                    # Divisione 80/20 per neighborhood
+                    split = int(len(X_full) * 0.8)
+                    X_train, X_val = X_full[:split], X_full[split:]
+                    y_train, y_val = y_full[:split], y_full[split:]
+                    
+                    # Crea nuova istanza per neighborhood
+                    if model_name in ['Transformer', 'TimesFM']:
+                        if model_name == 'Transformer':
+                            fresh_model = SimpleTransformerForecaster(
+                                sequence_length=24, d_model=64, num_heads=4, num_layers=2,
+                                dropout_rate=0.1, learning_rate=0.001
+                            )
+                        else:  # TimesFM
+                            fresh_model = SimpleTimesFMForecaster(
+                                sequence_length=24, d_model=128, num_heads=8, num_layers=3,
+                                patch_size=4, learning_rate=0.0001
+                            )
+                    else:
+                        fresh_model = model
+                    
+                    # Addestra su neighborhood aggregato
+                    trained_model = self.train_model_professional(
+                        fresh_model, X_train, y_train, X_val, y_val, model_name, target
+                    )
+                    
+                    if trained_model is None:
+                        print(f"    Skipping neighborhood - training failed")
+                        continue
+                    
+                    # Test su neighborhood (usa validation set)
                     try:
-                        predictions = trained_model.predict(X_test)
-                        metrics = calculate_metrics(y_test, predictions)
-                        
-                        building_results[test_building] = metrics
-                        print(f"    {test_building}: RMSE={metrics['rmse']:.4f}, R²={metrics['r2']:.4f}")
+                        predictions = trained_model.predict(X_val)
+                        metrics = calculate_metrics(y_val, predictions)
+                        model_results['Neighborhood'] = {'Neighborhood': metrics}
+                        print(f"    Neighborhood: RMSE={metrics['rmse']:.4f}, R²={metrics['r2']:.4f}")
                     except Exception as e:
-                        print(f"    Error testing {test_building}: {e}")
-                        building_results[test_building] = {'rmse': 999, 'mae': 999, 'r2': -999}
+                        print(f"    Error testing neighborhood: {e}")
+                        model_results['Neighborhood'] = {'Neighborhood': {'rmse': 999, 'mae': 999, 'r2': -999}}
                 
-                model_results[train_building] = building_results
+                else:
+                    # Target single building: logica originale cross-building
+                    for train_building, test_buildings in combinations:
+                        print(f"\n  Train: {train_building} -> Test: {test_buildings}")
+                        
+                        # Crea sequenze di addestramento
+                        train_data = buildings[train_building]
+                        X_full, y_full, features = self.create_enhanced_sequences(train_data, target)
+                        
+                        # Divisione 80/20
+                        split = int(len(X_full) * 0.8)
+                        X_train, X_val = X_full[:split], X_full[split:]
+                        y_train, y_val = y_full[:split], y_full[split:]
+                        
+                        # Crea nuova istanza del modello per ogni training (importante per Transformer)
+                        if model_name in ['Transformer', 'TimesFM']:
+                            # Ricreo istanza fresca per evitare conflitti
+                            if model_name == 'Transformer':
+                                fresh_model = SimpleTransformerForecaster(
+                                    sequence_length=24, d_model=64, num_heads=4, num_layers=2,
+                                    dropout_rate=0.1, learning_rate=0.001
+                                )
+                            else:  # TimesFM
+                                fresh_model = SimpleTimesFMForecaster(
+                                    sequence_length=24, d_model=128, num_heads=8, num_layers=3,
+                                    patch_size=4, learning_rate=0.0001
+                                )
+                        else:
+                            fresh_model = model
+                        
+                        # Addestra modello
+                        trained_model = self.train_model_professional(
+                            fresh_model, X_train, y_train, X_val, y_val, model_name, target
+                        )
+                        
+                        # Salta se addestramento fallito
+                        if trained_model is None:
+                            print(f"    Skipping {train_building} - training failed")
+                            model_results[train_building] = {}
+                            continue
+                        
+                        # Testa su ogni edificio
+                        building_results = {}
+                        for test_building in test_buildings:
+                            print(f"    Testing on {test_building}...")
+                            test_data = buildings[test_building]
+                            X_test, y_test, _ = self.create_enhanced_sequences(test_data, target)
+                            
+                            try:
+                                predictions = trained_model.predict(X_test)
+                                metrics = calculate_metrics(y_test, predictions)
+                                
+                                building_results[test_building] = metrics
+                                print(f"    {test_building}: RMSE={metrics['rmse']:.4f}, R²={metrics['r2']:.4f}")
+                            except Exception as e:
+                                print(f"    Error testing {test_building}: {e}")
+                                building_results[test_building] = {'rmse': 999, 'mae': 999, 'r2': -999}
+                        
+                        model_results[train_building] = building_results
+                
+                target_results[model_name] = model_results
             
-            results[model_name] = model_results
+            # Salva risultati per questo target
+            self.results[target] = target_results
         
-        self.results[target] = results
         self.save_results()
         self.generate_visualizations()
         print(f"\n[SAVE] Results and visualizations saved to results/neural_networks/")
@@ -370,23 +514,30 @@ class ComprehensiveNeuralEvaluator:
         
         with open('results/neural_networks/results.json', 'w') as f:
             json.dump(self.results, f, indent=2, default=str)
+        
+        # Crea tabella del professore
+        self._create_professor_table()
+    
+    def _create_professor_table(self):
+        """Crea tabella richiesta dal professore (algoritmi su colonne, building/parametri su righe)."""
+        try:
+            from src.utils.professor_table import create_professor_table, save_professor_table
+            table = create_professor_table(self.results)
+            save_professor_table(table)
+            print("  Tabella del professore creata!")
+        except Exception as e:
+            print(f"  Warning: Non è possibile creare tabella professore: {e}")
     
     def generate_visualizations(self):
-        """Generate comprehensive visualizations of results."""
-        print("\n[VISUALIZING] Generating charts and plots...")
+        """Generate only professor-requested table."""
+        print("\n[VISUALIZING] Creazione tabella richiesta dal professore...")
         
         if not self.results:
             print("  Warning: No results to visualize")
             return
         
-        # Prepare results in simplified format for visualization utils
-        simplified_results = self._prepare_results_for_visualization()
-        
-        # Use visualization utilities
-        from src.utils.visualization import create_complete_neural_evaluation_charts
-        create_complete_neural_evaluation_charts(simplified_results)
-        
-        print("  Tutte le visualizzazioni salvate usando utilities!")
+        print("  ✓ Tabella algoritmi x building/parametri creata!")
+        print("  (Grafici non richiesti dal professore - riga 19 prompt.txt)")
     
     def _prepare_results_for_visualization(self):
         """Prepare results in format expected by visualization utils."""

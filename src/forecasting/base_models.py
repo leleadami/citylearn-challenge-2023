@@ -24,6 +24,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import Pipeline
+from sklearn.neural_network import MLPRegressor
 
 
 class BaseForecaster(ABC):
@@ -197,7 +198,7 @@ def get_available_models() -> Dict[str, list]:
     return {
         'lstm': ['lstm', 'bidirectional_lstm', 'conv_lstm'],
         'transformer': ['transformer', 'timesfm'],
-        'baseline': ['random_forest', 'linear_regression', 'polynomial_regression', 'gaussian_process']
+        'baseline': ['random_forest', 'linear_regression', 'polynomial_regression', 'gaussian_process', 'ann']
     }
 
 
@@ -242,10 +243,6 @@ def get_baseline_forecasters() -> Dict[str, BaseForecaster]:
             'Random_Forest',
             RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1)
         ),
-        'Linear_Regression': SklearnForecaster(
-            'Linear_Regression', 
-            LinearRegression()
-        ),
         'Polynomial_Regression': SklearnForecaster(
             'Polynomial_Regression',
             Pipeline([
@@ -256,5 +253,17 @@ def get_baseline_forecasters() -> Dict[str, BaseForecaster]:
         'Gaussian_Process': SklearnForecaster(
             'Gaussian_Process',
             GaussianProcessRegressor(random_state=42)
+        ),
+        'ANN': SklearnForecaster(
+            'ANN',
+            MLPRegressor(
+                hidden_layer_sizes=(64, 32),
+                activation='relu',
+                solver='adam',
+                alpha=0.001,
+                learning_rate='adaptive',
+                max_iter=500,
+                random_state=42
+            )
         )
     }

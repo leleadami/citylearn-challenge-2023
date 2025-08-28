@@ -1,0 +1,9 @@
+,LSTM,Transformer,TimesFM,ANN,Random_Forest,Polynomial_Regression,Gaussian_Process
+cooling_demand_Building_1,0.91±0.43,FAIL,FAIL,0.84±0.20,0.86±0.25,2.49±0.94,2.51±0.65
+cooling_demand_Building_2,0.91±0.43,FAIL,FAIL,0.84±0.20,0.86±0.25,2.49±0.94,2.51±0.65
+cooling_demand_Building_3,0.91±0.43,FAIL,FAIL,0.84±0.20,0.86±0.25,2.49±0.94,2.51±0.65
+solar_generation_Building_1,165.06±42.01,FAIL,FAIL,26.18±1.57,28.83±1.76,124.93±37.42,297.69±0.00
+solar_generation_Building_2,165.06±42.01,FAIL,FAIL,26.18±1.57,28.83±1.76,124.93±37.42,297.69±0.00
+solar_generation_Building_3,165.06±42.01,FAIL,FAIL,26.18±1.57,28.83±1.76,124.93±37.42,297.69±0.00
+neighborhood_cooling,,FAIL,FAIL,1.95,1.88,2.20,8.52
+neighborhood_solar,,FAIL,FAIL,234.41,208.32,374.65,935.22
