@@ -307,8 +307,8 @@ class RLEvaluator:
         return results
     
     def create_rl_visualizations(self):
-        """RL visualizations non richieste dal professore."""
-        print("\n[RL] Visualizzazioni non richieste dal professore - saltate")
+        """RL visualizations not implemented."""
+        print("\n[RL] Visualizzazioni non implementate - saltate")
         print("     (Solo tabella richiesta - riga 19 prompt.txt)")
     
     def save_results(self):

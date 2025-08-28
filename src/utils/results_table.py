@@ -1,11 +1,10 @@
 """
-Crea tabella risultati specifica richiesta dal professore.
+Crea tabella risultati per analisi comparativa algoritmi.
 
-Dal prompt.txt (riga 19):
-"conviene avere una tabella con i vari algoritmi (LSTM, ANN, Gaussian regression, ...) 
-sulle colonne, il building e/o il parametro (solar generation, CO2) sulle righe, 
-e in corrispondenza di ogni combinazione riporterei la media e deviazione standard 
-dell'errore assoluto o RMSE (normalizzati)"
+Formato tabella:
+- Algoritmi (LSTM, ANN, Gaussian regression, ecc.) sulle colonne
+- Building e parametri (cooling_demand, solar_generation) sulle righe  
+- Valori: media e deviazione standard dell'RMSE normalizzato
 """
 
 import json
@@ -17,9 +16,9 @@ def load_results():
     with open('results/neural_networks/results.json', 'r') as f:
         return json.load(f)
 
-def create_professor_table(results=None):
-    """Crea la tabella esatta richiesta dal professore."""
-    print("=== CREAZIONE TABELLA PROFESSORE ===")
+def create_results_table(results=None):
+    """Crea tabella comparativa risultati algoritmi."""
+    print("=== CREAZIONE TABELLA RISULTATI ===")
     
     # Carica risultati se non forniti
     if results is None:
@@ -87,29 +86,29 @@ def create_professor_table(results=None):
     
     return table
 
-def save_professor_table(table):
+def save_results_table(table):
     """Salva tabella in formato CSV e stampa."""
     # Salva CSV
-    table.to_csv('results/professor_results_table.csv')
+    table.to_csv('results/algorithm_comparison_table.csv')
     
     # Stampa tabella
     print("\n" + "="*120)
-    print("TABELLA RISULTATI RICHIESTA DAL PROFESSORE")
+    print("TABELLA RISULTATI COMPARATIVA ALGORITMI")
     print("RMSE Media ± Deviazione Standard")
     print("="*120)
     print()
     print(table.to_string())
     print()
     print("="*120)
-    print("Tabella salvata in: results/professor_results_table.csv")
+    print("Tabella salvata in: results/algorithm_comparison_table.csv")
     print("="*120)
 
 def main():
     """Funzione principale."""
-    table = create_professor_table()
-    save_professor_table(table)
+    table = create_results_table()
+    save_results_table(table)
     
-    print("\n[INFO] Tabella del professore creata con successo!")
+    print("\n[INFO] Tabella risultati creata con successo!")
 
 if __name__ == "__main__":
     main()

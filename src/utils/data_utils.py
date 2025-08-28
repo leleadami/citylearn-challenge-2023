@@ -862,3 +862,68 @@ def get_energy_statistics(building_data: Dict[str, pd.DataFrame]) -> Dict[str, D
         statistics[building_name] = building_stats
     
     return statistics
+
+
+def create_thesis_visualizations(results):
+    """Crea grafici per la tesi usando i risultati."""
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    import numpy as np
+    import os
+    
+    # Setup stile
+    plt.rcParams['figure.figsize'] = (12, 8)
+    plt.rcParams['font.size'] = 11
+    sns.set_style("whitegrid")
+    
+    os.makedirs('results/visualizations', exist_ok=True)
+    
+    # Grafico 1: Performance algoritmi
+    algorithms = ['LSTM', 'ANN', 'Random_Forest', 'Gaussian_Process']
+    cooling_rmse = []
+    solar_rmse = []
+    
+    for algorithm in algorithms:
+        # RMSE cooling
+        cooling_values = []
+        if 'cooling_demand' in results and algorithm in results['cooling_demand']:
+            for train_building in results['cooling_demand'][algorithm]:
+                for test_building in results['cooling_demand'][algorithm][train_building]:
+                    rmse = results['cooling_demand'][algorithm][train_building][test_building].get('rmse', 999)
+                    if rmse != 999:
+                        cooling_values.append(rmse)
+        cooling_rmse.append(np.mean(cooling_values) if cooling_values else np.nan)
+        
+        # RMSE solar
+        solar_values = []
+        if 'solar_generation' in results and algorithm in results['solar_generation']:
+            for train_building in results['solar_generation'][algorithm]:
+                for test_building in results['solar_generation'][algorithm][train_building]:
+                    rmse = results['solar_generation'][algorithm][train_building][test_building].get('rmse', 999)
+                    if rmse != 999:
+                        solar_values.append(rmse)
+        solar_rmse.append(np.mean(solar_values) if solar_values else np.nan)
+    
+    # Plot
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
+    
+    colors = ['#2E86AB', '#F18F01', '#A23B72', '#C73E1D']
+    
+    # Cooling
+    bars1 = ax1.bar(algorithms, cooling_rmse, color=colors, alpha=0.8)
+    ax1.set_title('Performance Algoritmi - Cooling Demand', fontsize=14, fontweight='bold')
+    ax1.set_ylabel('RMSE')
+    ax1.tick_params(axis='x', rotation=45)
+    
+    # Solar
+    bars2 = ax2.bar(algorithms, solar_rmse, color=colors, alpha=0.8)
+    ax2.set_title('Performance Algoritmi - Solar Generation', fontsize=14, fontweight='bold') 
+    ax2.set_ylabel('RMSE')
+    ax2.tick_params(axis='x', rotation=45)
+    
+    plt.tight_layout()
+    plt.savefig('results/visualizations/thesis_algorithm_performance.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    print("Grafici per tesi creati in data_utils!")
+    return True

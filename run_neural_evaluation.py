@@ -45,7 +45,7 @@ class ComprehensiveNeuralEvaluator:
         self.training_histories = {}
         self.model_instances = {}
         
-        # Modelli neurali richiesti dal professore
+        # Modelli neurali implementati
         self.neural_models = {
             'LSTM': LSTMForecaster(
                 sequence_length=24,
@@ -358,7 +358,7 @@ class ComprehensiveNeuralEvaluator:
         print("="*80)
         
         buildings = self.load_complete_dataset()
-        # Valuta cooling demand, solar generation e neighborhood aggregation come richiesto dal professore
+        # Valuta cooling demand, solar generation e neighborhood aggregation
         targets = ['cooling_demand', 'solar_generation', 'neighborhood_cooling', 'neighborhood_solar']
         
         print(f"\n[TARGETS] {targets}")
@@ -515,29 +515,36 @@ class ComprehensiveNeuralEvaluator:
         with open('results/neural_networks/results.json', 'w') as f:
             json.dump(self.results, f, indent=2, default=str)
         
-        # Crea tabella del professore
-        self._create_professor_table()
+        # Crea tabella risultati
+        self._create_results_table()
     
-    def _create_professor_table(self):
-        """Crea tabella richiesta dal professore (algoritmi su colonne, building/parametri su righe)."""
+    def _create_results_table(self):
+        """Crea tabella comparativa algoritmi (algoritmi su colonne, building/parametri su righe)."""
         try:
-            from src.utils.professor_table import create_professor_table, save_professor_table
-            table = create_professor_table(self.results)
-            save_professor_table(table)
-            print("  Tabella del professore creata!")
+            from src.utils.results_table import create_results_table, save_results_table
+            table = create_results_table(self.results)
+            save_results_table(table)
+            print("  Tabella risultati creata!")
         except Exception as e:
-            print(f"  Warning: Non è possibile creare tabella professore: {e}")
+            print(f"  Warning: Non è possibile creare tabella risultati: {e}")
     
     def generate_visualizations(self):
-        """Generate only professor-requested table."""
-        print("\n[VISUALIZING] Creazione tabella richiesta dal professore...")
+        """Generate comparative results table."""
+        print("\n[VISUALIZING] Creazione tabella risultati comparativa...")
         
         if not self.results:
             print("  Warning: No results to visualize")
             return
         
+        # Crea grafici per tesi
+        try:
+            from src.utils.data_utils import create_thesis_visualizations
+            create_thesis_visualizations(self.results)
+            print("  ✓ Grafici per tesi creati!")
+        except Exception as e:
+            print(f"  Warning: Errore creazione grafici: {e}")
+            
         print("  ✓ Tabella algoritmi x building/parametri creata!")
-        print("  (Grafici non richiesti dal professore - riga 19 prompt.txt)")
     
     def _prepare_results_for_visualization(self):
         """Prepare results in format expected by visualization utils."""
