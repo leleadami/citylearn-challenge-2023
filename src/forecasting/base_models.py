@@ -132,7 +132,7 @@ class BaseForecaster(ABC):
 # Available forecasting models are organized in separate files:
 #
 # from .lstm_models import LSTMForecaster, BidirectionalLSTMForecaster, ConvLSTMForecaster
-# from .transformer_models import TransformerForecaster, TimesFMInspiredForecaster
+# from .transformer_models import TransformerForecaster, TimesFMForecaster
 # from .base_models import get_baseline_forecasters  # For Random Forest, Linear, etc.
 #
 # Or use the factory function:
@@ -173,11 +173,11 @@ def create_forecaster(model_type: str, **kwargs) -> BaseForecaster:
                 return ConvLSTMForecaster(**kwargs)
                 
         elif model_type in ['transformer', 'timesfm']:
-            from .transformer_models import TransformerForecaster, TimesFMInspiredForecaster
+            from .transformer_models import TransformerForecaster, TimesFMForecaster
             if model_type == 'transformer':
                 return TransformerForecaster(**kwargs)
             elif model_type == 'timesfm':
-                return TimesFMInspiredForecaster(**kwargs)
+                return TimesFMForecaster(**kwargs)
         
         # Se arriviamo qui, il model_type non è riconosciuto
         raise ValueError(f"Unknown model type: {model_type}")

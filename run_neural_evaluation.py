@@ -27,7 +27,7 @@ from src.forecasting.lstm_models import (
     BidirectionalLSTMForecaster, 
     ConvLSTMForecaster
 )
-from src.forecasting.simple_transformer import (
+from src.forecasting.transformer_models import (
     TransformerForecaster, 
     TimesFMForecaster
 )
