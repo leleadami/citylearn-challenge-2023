@@ -1,20 +1,20 @@
 """
-LSTM (Long Short-Term Memory) Models for CityLearn Challenge
+Modelli LSTM (Long Short-Term Memory) per CityLearn Challenge
 
-This module implements LSTM-based time series forecasting models specifically
-designed for building energy prediction. LSTM networks are particularly
-well-suited for energy forecasting because they can capture:
+Questo modulo implementa modelli di forecasting serie temporali basati su LSTM
+progettati specificamente per la previsione energetica degli edifici. Le reti LSTM
+sono particolarmente adatte per il forecasting energetico perché possono catturare:
 
-1. Long-term dependencies in energy consumption patterns
-2. Complex seasonal and weekly cycles  
-3. Non-linear relationships between weather and energy demand
-4. Memory of past consumption patterns for future prediction
+1. Dipendenze a lungo termine nei pattern di consumo energetico
+2. Cicli stagionali e settimanali complessi
+3. Relazioni non-lineari tra meteo e domanda energetica
+4. Memoria di pattern di consumo passati per predizione futura
 
-LSTM Architecture Benefits for Energy Forecasting:
-- Selective memory through gates (forget, input, output)
-- Gradient flow preservation for long sequences
-- Ability to learn complex temporal patterns
-- Robust to varying sequence lengths and missing data
+Vantaggi Architettura LSTM per Forecasting Energetico:
+- Memoria selettiva attraverso gate (forget, input, output)
+- Preservazione flusso del gradiente per sequenze lunghe
+- Capacità di apprendere pattern temporali complessi
+- Robustezza a lunghezze di sequenza variabili e dati mancanti
 """
 
 import numpy as np

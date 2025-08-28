@@ -195,7 +195,7 @@ class RLEvaluator:
         """
         self.results = {}
         self.reward_type = reward_type
-        print(f"\n🎯 Reward Function: {reward_type.upper()}")
+        print(f"\nFunzione Ricompensa: {reward_type.upper()}")
         
     def evaluate_q_learning(self, episodes: int = 100):
         """Evaluate Q-Learning agents."""
@@ -308,7 +308,7 @@ class RLEvaluator:
     
     def create_rl_visualizations(self):
         """Create comprehensive RL visualizations."""
-        print("\n📊 Generating RL visualizations...")
+        print("\nGenerazione visualizzazioni RL...")
         
         if not self.results:
             print("Warning: No results to visualize")
@@ -318,11 +318,11 @@ class RLEvaluator:
         from src.utils.visualization import create_complete_rl_evaluation_charts
         create_complete_rl_evaluation_charts(self.results)
         
-        print("✅ RL visualizations complete using utils!")
+        print("Visualizzazioni RL complete usando utilities!")
     
     def save_results(self):
         """Save RL evaluation results to JSON file."""
-        print("\n💾 Saving RL results...")
+        print("\nSalvataggio risultati RL...")
         os.makedirs('results/rl_experiments', exist_ok=True)
         
         # Save main results
@@ -331,7 +331,7 @@ class RLEvaluator:
             import json
             json.dump(self.results, f, indent=2, default=str)
         
-        print(f"  ✓ Results saved to {results_path}")
+        print(f"  Risultati salvati in {results_path}")
 
 
 def main(reward_type: str = 'balanced'):

@@ -1,15 +1,15 @@
 """
-Neural Network Evaluation for Smart Building Energy Management
-Advanced LSTM, Transformer, and baseline model implementations
+Valutazione di Reti Neurali per la Gestione Energetica Intelligente degli Edifici
+Implementazioni avanzate di LSTM, Transformer e modelli baseline
 
-This module provides comprehensive evaluation of neural architectures for:
-1. Building energy consumption forecasting
-2. Multiple advanced neural architectures (LSTM variants + Transformers)
-3. Professional training with validation and early stopping
-4. Cross-building generalization testing
-5. Neighborhood-level aggregation analysis
-6. Solar generation prediction
-7. Comprehensive performance analysis and visualizations
+Questo modulo fornisce una valutazione completa delle architetture neurali per:
+1. Previsione del consumo energetico degli edifici
+2. Architetture neurali avanzate multiple (varianti LSTM + Transformer)
+3. Addestramento con validazione e early stopping
+4. Test di generalizzazione cross-building
+5. Analisi di aggregazione a livello di quartiere
+6. Previsione di generazione solare
+7. Analisi delle performance e visualizzazioni complete
 """
 
 import numpy as np
@@ -69,7 +69,7 @@ class ComprehensiveNeuralEvaluator:
                 dropout_rate=0.2,
                 learning_rate=0.001
             ),
-            # 'Transformer': TransformerForecaster(  # TEMPORARILY DISABLED - has mask bug
+            # 'Transformer': TransformerForecaster(  # Disabilitato: errori complessi con mask
             #     sequence_length=24,
             #     d_model=64,
             #     num_heads=8,
@@ -77,7 +77,7 @@ class ComprehensiveNeuralEvaluator:
             #     dropout_rate=0.1,
             #     learning_rate=0.001
             # ),
-            # 'TimesFM': TimesFMInspiredForecaster(  # TEMPORARILY DISABLED - complex model
+            # 'TimesFM': TimesFMInspiredForecaster(  # Modelli disabilitati: richiedono fix complessi
             #     sequence_length=24,
             #     d_model=128,
             #     num_heads=8,
@@ -116,7 +116,7 @@ class ComprehensiveNeuralEvaluator:
                 file_path = f'data/{phase}/Building_{building_id}.csv'
                 if os.path.exists(file_path):
                     data = pd.read_csv(file_path)
-                    # Add time features as professor requested
+                    # Aggiunge caratteristiche temporali per l'analisi
                     data = create_time_features(data)
                     all_data.append(data)
                     print(f"  Loaded {phase}: {len(data)} samples")
@@ -156,7 +156,7 @@ class ComprehensiveNeuralEvaluator:
     
     def create_enhanced_sequences(self, data: pd.DataFrame, target: str, seq_len: int = 24):
         """Create enhanced sequences with all available features."""
-        # Enhanced feature set as professor requested
+        # Set di caratteristiche migliorate per l'analisi
         base_features = [
             'hour', 'day_of_week', 'month', 'is_weekend',
             'outdoor_dry_bulb_temperature', 'outdoor_relative_humidity',
@@ -247,7 +247,9 @@ class ComprehensiveNeuralEvaluator:
         print(f"  Sequence shape: {X_train.shape}")
         
         # Different epochs for different model types
-        if 'baseline' in model_name.lower() or 'random_forest' in model_name.lower():
+        if 'transformer' in model_name.lower() or 'timesfm' in model_name.lower():
+            epochs = min(epochs, 20)  # Reduce epochs for Transformer models to speed up training
+        elif 'baseline' in model_name.lower() or 'random_forest' in model_name.lower():
             # Baseline models don't need epochs
             if hasattr(model, 'fit'):
                 # Flatten sequences for non-neural models
@@ -384,7 +386,7 @@ class ComprehensiveNeuralEvaluator:
         from src.utils.visualization import create_complete_neural_evaluation_charts
         create_complete_neural_evaluation_charts(simplified_results)
         
-        print("  ✓ All visualizations saved using utils!")
+        print("  Tutte le visualizzazioni salvate usando utilities!")
     
     def _prepare_results_for_visualization(self):
         """Prepare results in format expected by visualization utils."""

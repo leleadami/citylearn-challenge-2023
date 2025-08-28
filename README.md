@@ -2,7 +2,7 @@
 
 A comprehensive implementation of advanced machine learning approaches for building energy forecasting and optimization, featuring LSTM variants, Transformers, and RL agents with modular reward functions.
 
-## 🏢 Project Overview
+## Project Overview
 
 This project implements state-of-the-art neural network architectures and reinforcement learning algorithms for smart building energy management, focusing on:
 
@@ -11,7 +11,7 @@ This project implements state-of-the-art neural network architectures and reinfo
 - **Comprehensive model comparison** across different architectures
 - **Real-world dataset** from CityLearn Challenge 2023
 
-## 🎯 Key Features
+## Key Features
 
 ### Neural Network Models
 - **LSTM Variants**: Standard, Bidirectional, Convolutional LSTM
@@ -33,7 +33,7 @@ This project implements state-of-the-art neural network architectures and reinfo
 - `sustainability`: Environmental impact focus
 - `multi_objective`: Configurable weights
 
-## 📊 Dataset
+## Dataset
 
 **CityLearn Challenge 2023** - Complete dataset including:
 - **5 phases** of data (Phase 1 + 4 Phase 2 evaluations)
@@ -41,7 +41,7 @@ This project implements state-of-the-art neural network architectures and reinfo
 - **Multiple features**: Temperature, humidity, occupancy, solar generation
 - **Target**: Cooling demand prediction and optimization
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Installation
 
@@ -80,7 +80,7 @@ python -c "from run_rl_evaluation import main; main('cost')"
 - Results: `results/rl_experiments/rl_results.json` 
 - Visualizations: `results/visualizations/05*.png`
 
-## 📈 Results
+## Results
 
 ### Neural Network Performance
 - **Best cross-building**: Building_3→Building_2 (RMSE=0.520, R²=0.809)
@@ -92,7 +92,7 @@ python -c "from run_rl_evaluation import main; main('cost')"
 - **Centralized vs Decentralized**: Trade-offs between coordination and scalability
 - **Reward function impact**: Different strategies lead to distinct optimization behaviors
 
-## 🛠️ Project Structure
+## Project Structure
 
 ```
 ├── src/
@@ -114,7 +114,7 @@ python -c "from run_rl_evaluation import main; main('cost')"
 └── requirements.txt          # Dependencies
 ```
 
-## 🎨 Visualizations
+## Visualizations
 
 The project automatically generates comprehensive visualizations:
 
@@ -124,7 +124,7 @@ The project automatically generates comprehensive visualizations:
 4. **Model Architectures** - Visual representation of network structures
 5. **RL Training Analysis** - Agent learning progress and comparison
 
-## ⚙️ Configuration
+## Configuration
 
 ### Neural Networks
 - **Epochs**: 50 (configurable)
@@ -137,7 +137,7 @@ The project automatically generates comprehensive visualizations:
 - **Environment**: MockCityLearnEnv with realistic building dynamics
 - **Reward functions**: Modular system supporting custom objectives
 
-## 📚 Dependencies
+## Dependencies
 
 - `tensorflow>=2.16.0`
 - `keras>=3.0.0`
@@ -147,7 +147,7 @@ The project automatically generates comprehensive visualizations:
 - `seaborn>=0.11.0`
 - `scikit-learn>=1.1.0`
 
-## 🔬 Key Insights
+## Key Insights
 
 - **Linear models remain competitive** for cross-building energy forecasting
 - **Transformer models** require careful tuning for time series applications

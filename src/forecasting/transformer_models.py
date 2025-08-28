@@ -135,7 +135,7 @@ class MultiHeadAttention(layers.Layer):
         # Transpose to put heads dimension first: (batch, num_heads, seq_len, depth)
         return tf.transpose(x, perm=[0, 2, 1, 3])
     
-    def call(self, v, k, q, mask=None):
+    def call(self, v, k, q, **kwargs):
         """
         Compute multi-head attention for energy time series.
         
@@ -155,12 +155,13 @@ class MultiHeadAttention(layers.Layer):
         
         Args:
             v, k, q: Value, key, query tensors (typically same input for self-attention)
-            mask: Optional attention mask (for causal/future masking)
+            **kwargs: Optional parameters including mask
             
         Returns:
             output: Attended representation for energy forecasting
             attention_weights: Interpretable attention patterns
         """
+        mask = kwargs.get('mask', None)
         batch_size = tf.shape(q)[0]   # type: ignore
         
         # Apply linear projections to create query, key, value representations
@@ -510,7 +511,7 @@ class TransformerBlock(layers.Layer):
             Processed energy representations with enhanced temporal understanding
         """
         # Stage 1: Multi-head attention for temporal pattern discovery
-        attn_output, _ = self.att(x, x, x, mask)  # Self-attention on energy sequence
+        attn_output, _ = self.att(x, x, x, **({'mask': mask} if mask is not None else {}))  # Self-attention on energy sequence
         attn_output = self.dropout1(attn_output, training=training)  # Regularization
         out1 = self.layernorm1(x + attn_output)  # Residual connection + normalization
         
@@ -1225,8 +1226,15 @@ class TimesFMInspiredForecaster(BaseForecaster):
         inputs = Input(shape=input_shape, name='energy_timesfm_input')
         
         # Stage 2: TimesFM-style patch creation
+        # Calculate output shape for Lambda layer
+        seq_len, features = input_shape
+        padded_len = ((seq_len + self.patch_size - 1) // self.patch_size) * self.patch_size
+        num_patches = padded_len // self.patch_size
+        patch_output_shape = (num_patches, self.patch_size * features)
+        
         patches = layers.Lambda(
             self._create_patches, 
+            output_shape=patch_output_shape,
             name='energy_patching'
         )(inputs)
         

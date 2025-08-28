@@ -1,9 +1,9 @@
 """
-Reward Functions for Smart Building Energy Management
+Funzioni Ricompensa per Gestione Energetica Intelligente degli Edifici
 
-This module implements various reward functions for reinforcement learning
-agents in building energy optimization. Different reward functions encourage
-different behaviors and optimization objectives.
+Questo modulo implementa varie funzioni ricompensa per agenti di reinforcement learning
+nell'ottimizzazione energetica degli edifici. Diverse funzioni ricompensa incoraggiano
+comportamenti diversi e obiettivi di ottimizzazione differenti.
 """
 
 import numpy as np

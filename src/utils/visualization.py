@@ -1,31 +1,31 @@
 """
-Visualization utilities for CityLearn project results.
+Utilità di visualizzazione per risultati progetto CityLearn.
 
-This module provides comprehensive visualization tools for analyzing building
-energy forecasting models and results in the CityLearn Challenge context.
-It supports visualization of training progress, forecasting performance,
-cross-building generalization, and neighborhood-level analysis.
+Questo modulo fornisce strumenti di visualizzazione completi per analizzare i modelli
+di forecasting energetico degli edifici e i risultati nel contesto CityLearn Challenge.
+Supporta la visualizzazione del progresso di addestramento, performance di forecasting,
+generalizzazione cross-building e analisi a livello di quartiere.
 
-Key visualization categories:
-1. Training dynamics: Learning curves, loss evolution, convergence analysis
-2. Forecasting quality: Time series comparisons, residual analysis, error distributions
-3. Model comparison: Performance metrics across algorithms and buildings
-4. Cross-building analysis: Generalization patterns and transfer learning insights
-5. Neighborhood analysis: District-level energy patterns and aggregation benefits
+Categorie chiave di visualizzazione:
+1. Dinamiche di addestramento: Curve di apprendimento, evoluzione della loss, analisi convergenza
+2. Qualità forecasting: Confronti serie temporali, analisi residui, distribuzione errori
+3. Confronto modelli: Metriche performance attraverso algoritmi ed edifici
+4. Analisi cross-building: Pattern di generalizzazione e insights transfer learning
+5. Analisi quartiere: Pattern energetici a livello distrettuale e benefici aggregazione
 
-Design principles:
-- Clear, publication-ready plots with consistent styling
-- Comprehensive analysis with multiple plot types per function
-- Energy domain-specific interpretations and insights
-- Statistical rigor in model comparison and significance testing
-- Interactive insights for energy system optimization
+Principi di design:
+- Plot chiari e publication-ready con stile consistente
+- Analisi completa con tipi multipli di plot per funzione
+- Interpretazioni e insights specifici del dominio energetico
+- Rigore statistico nel confronto modelli e test significatività
+- Insights interattivi per ottimizzazione sistemi energetici
 
-Visualization best practices for energy data:
-- Time series plots show temporal patterns and seasonality
-- Residual analysis reveals model bias and heteroscedasticity
-- Scatter plots indicate prediction accuracy and outliers
-- Heatmaps highlight cross-building performance patterns
-- Statistical tests validate performance differences
+Migliori pratiche visualizzazione per dati energetici:
+- Plot serie temporali mostrano pattern temporali e stagionalità
+- Analisi residui rivela bias del modello e eteroschedasticità
+- Scatter plot indicano accuratezza predizione e outlier
+- Heatmap evidenziano pattern performance cross-building
+- Test statistici validano differenze performance
 """
 
 import matplotlib.pyplot as plt
