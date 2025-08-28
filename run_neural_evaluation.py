@@ -28,8 +28,8 @@ from src.forecasting.lstm_models import (
     ConvLSTMForecaster
 )
 from src.forecasting.simple_transformer import (
-    SimpleTransformerForecaster, 
-    SimpleTimesFMForecaster
+    TransformerForecaster, 
+    TimesFMForecaster
 )
 from src.forecasting.base_models import get_baseline_forecasters
 from src.utils.data_utils import calculate_metrics, create_time_features
@@ -54,7 +54,7 @@ class ComprehensiveNeuralEvaluator:
                 dropout_rate=0.2,
                 learning_rate=0.001
             ),
-            'Transformer': SimpleTransformerForecaster(
+            'Transformer': TransformerForecaster(
                 sequence_length=24,
                 d_model=64,
                 num_heads=4,
@@ -62,7 +62,7 @@ class ComprehensiveNeuralEvaluator:
                 dropout_rate=0.1,
                 learning_rate=0.001
             ),
-            'TimesFM': SimpleTimesFMForecaster(
+            'TimesFM': TimesFMForecaster(
                 sequence_length=24,
                 d_model=128,
                 num_heads=8,

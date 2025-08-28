@@ -14,7 +14,7 @@ from keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from .base_models import BaseForecaster
 
 
-class SimpleTransformerForecaster(BaseForecaster):
+class TransformerForecaster(BaseForecaster):
     """
     Implementazione semplificata di Transformer per forecasting energetico.
     
@@ -39,7 +39,7 @@ class SimpleTransformerForecaster(BaseForecaster):
             dropout_rate: Tasso dropout
             learning_rate: Learning rate
         """
-        super().__init__("Simple_Transformer")
+        super().__init__("Transformer")
         self.sequence_length = sequence_length
         self.d_model = d_model
         self.num_heads = num_heads
@@ -98,7 +98,7 @@ class SimpleTransformerForecaster(BaseForecaster):
     
     def fit(self, X_train, y_train, X_val=None, y_val=None, epochs=50, batch_size=32, verbose=0):
         """Addestra Simple Transformer."""
-        print(f"[SIMPLE TRANSFORMER] Inizio addestramento - {epochs} epoche")
+        print(f"[TRANSFORMER] Inizio addestramento - {epochs} epoche")
         
         # Costruisce modello se necessario
         if self.model is None:
@@ -139,7 +139,7 @@ class SimpleTransformerForecaster(BaseForecaster):
         return predictions.flatten()
 
 
-class SimpleTimesFMForecaster(BaseForecaster):
+class TimesFMForecaster(BaseForecaster):
     """
     Implementazione semplificata ispirata a TimesFM per forecasting.
     
@@ -164,7 +164,7 @@ class SimpleTimesFMForecaster(BaseForecaster):
             patch_size: Dimensione patch (semplificato)
             learning_rate: Learning rate
         """
-        super().__init__("Simple_TimesFM")
+        super().__init__("TimesFM")
         self.sequence_length = sequence_length
         self.d_model = d_model
         self.num_heads = num_heads
@@ -221,7 +221,7 @@ class SimpleTimesFMForecaster(BaseForecaster):
     
     def fit(self, X_train, y_train, X_val=None, y_val=None, epochs=30, batch_size=16, verbose=0):
         """Addestra Simple TimesFM."""
-        print(f"[SIMPLE TIMESFM] Inizio addestramento - {epochs} epoche")
+        print(f"[TIMESFM] Inizio addestramento - {epochs} epoche")
         
         # Costruisce modello
         if self.model is None:
