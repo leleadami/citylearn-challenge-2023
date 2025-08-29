@@ -1,8 +1,8 @@
 """
-Soft Actor-Critic (SAC) Agent for CityLearn Challenge 2023
+Agente Soft Actor-Critic (SAC) per CityLearn Challenge 2023
 
-Implements both centralized and decentralized SAC approaches
-for building energy management with continuous action spaces.
+Implementa approcci SAC sia centralizzati che decentralizzati
+per la gestione energetica degli edifici con spazi di azione continui.
 """
 
 from __future__ import annotations
@@ -21,13 +21,13 @@ import random
 
 class SACAgent:
     """
-    Soft Actor-Critic agent for continuous control.
+    Agente Soft Actor-Critic per controllo continuo.
     
-    SAC is particularly well-suited for building energy control because:
-    1. Handles continuous action spaces (HVAC setpoints)
-    2. Sample efficient learning
-    3. Automatic entropy regularization
-    4. Robust to hyperparameters
+    SAC è particolarmente adatto per il controllo energetico degli edifici perché:
+    1. Gestisce spazi di azione continui (setpoint HVAC)
+    2. Apprendimento efficiente in termini di campioni
+    3. Regolarizzazione dell'entropia automatica
+    4. Robusto agli iperparametri
     """
     
     def __init__(self,
@@ -41,18 +41,18 @@ class SACAgent:
                  buffer_size: int = 100000,
                  batch_size: int = 256):
         """
-        Initialize SAC agent.
+        Inizializza agente SAC.
         
         Args:
-            state_dim: State space dimensionality
-            action_dim: Action space dimensionality  
-            agent_id: Unique agent identifier
-            learning_rate: Learning rate for all networks
-            gamma: Discount factor
-            tau: Soft update coefficient
-            alpha: Entropy regularization coefficient
-            buffer_size: Replay buffer size
-            batch_size: Training batch size
+            state_dim: Dimensionalità dello spazio degli stati
+            action_dim: Dimensionalità dello spazio delle azioni
+            agent_id: Identificatore unico dell'agente
+            learning_rate: Learning rate per tutte le reti
+            gamma: Fattore di sconto
+            tau: Coefficiente di aggiornamento soft
+            alpha: Coefficiente di regolarizzazione dell'entropia
+            buffer_size: Dimensione del buffer di replay
+            batch_size: Dimensione del batch di addestramento
         """
         self.state_dim = state_dim
         self.action_dim = action_dim
@@ -63,26 +63,26 @@ class SACAgent:
         self.alpha = alpha
         self.batch_size = batch_size
         
-        # Networks with explicit typing
+        # Reti con tipizzazione esplicita
         self.actor: Model = self._build_actor()
         self.critic1: Model = self._build_critic()
         self.critic2: Model = self._build_critic()
         self.target_critic1: Model = self._build_critic()
         self.target_critic2: Model = self._build_critic()
         
-        # Initialize target networks
+        # Inizializza reti target
         self.target_critic1.set_weights(self.critic1.get_weights())
         self.target_critic2.set_weights(self.critic2.get_weights())
         
-        # Optimizers with proper typing
+        # Ottimizzatori con tipizzazione appropriata
         self.actor_optimizer: Adam = Adam(learning_rate=learning_rate)
         self.critic1_optimizer: Adam = Adam(learning_rate=learning_rate)
         self.critic2_optimizer: Adam = Adam(learning_rate=learning_rate)
         
-        # Replay buffer
+        # Buffer di replay
         self.replay_buffer = deque(maxlen=buffer_size)
         
-        # Training metrics
+        # Metriche di addestramento
         self.training_rewards = []
         self.actor_losses = []
         self.critic_losses = []
@@ -90,20 +90,20 @@ class SACAgent:
     
     def _build_actor(self) -> Model:
         """
-        Build actor network for continuous actions.
+        Costruisce rete actor per azioni continue.
         
         Returns:
-            Actor network outputting mean and log_std
+            Rete actor che produce media e log_std
         """
         inputs = Input(shape=(self.state_dim,))
         
         x = layers.Dense(256, activation='relu')(inputs)
         x = layers.Dense(256, activation='relu')(x)
         
-        # Mean of action distribution
+        # Media della distribuzione delle azioni
         mean = layers.Dense(self.action_dim, activation='tanh')(x)
         
-        # Log standard deviation (clamped for stability)
+        # Log deviazione standard (limitata per stabilità)
         log_std = layers.Dense(self.action_dim, activation='tanh')(x)
         log_std = layers.Lambda(lambda x: tf.clip_by_value(x, -20, 2))(log_std)
         
@@ -112,15 +112,15 @@ class SACAgent:
     
     def _build_critic(self) -> Model:
         """
-        Build critic network for Q-value estimation.
+        Costruisce rete critic per stima dei Q-values.
         
         Returns:
-            Critic network outputting Q-values
+            Rete critic che produce Q-values
         """
         state_input = Input(shape=(self.state_dim,))
         action_input = Input(shape=(self.action_dim,))
         
-        # Concatenate state and action
+        # Concatena stato e azione
         concat = layers.Concatenate()([state_input, action_input])
         
         x = layers.Dense(256, activation='relu')(concat)
@@ -133,62 +133,62 @@ class SACAgent:
     
     def select_action(self, state: np.ndarray, training: bool = True) -> np.ndarray:
         """
-        Select action using current policy.
+        Seleziona azione utilizzando la policy corrente.
         
         Args:
-            state: Current state
-            training: Whether to add exploration noise
+            state: Stato corrente
+            training: Se aggiungere rumore di esplorazione
             
         Returns:
-            Selected action
+            Azione selezionata
         """
         state_tensor = tf.convert_to_tensor([state], dtype=tf.float32)
         
-        # Get policy output - this returns a tuple of tensors
+        # Ottieni output della policy - restituisce una tupla di tensori
         policy_output = self.actor(state_tensor)
         mean = policy_output[0]
         log_std = policy_output[1]
         
         if training:
-            # Sample from policy distribution
+            # Campiona dalla distribuzione della policy
             std = tf.exp(log_std)
             normal = tf.random.normal(tf.shape(mean))
             action = tf.add(mean, tf.multiply(std, normal))
         else:
-            # Use deterministic policy
+            # Usa policy deterministica
             action = mean
         
-        # Clip action to [-1, 1] range with proper casting
+        # Limita azione al range [-1, 1] con casting appropriato
         action_clipped = tf.cast(tf.clip_by_value(action, -1, 1), tf.float32)
         return tf.squeeze(action_clipped).numpy()
     
     def store_transition(self, state: np.ndarray, action: np.ndarray, 
                         reward: float, next_state: np.ndarray, done: bool):
-        """Store transition in replay buffer."""
+        """Memorizza transizione nel buffer di replay."""
         self.replay_buffer.append((state, action, reward, next_state, done))
     
     def train_step(self) -> Tuple[float, float]:
         """
-        Perform one SAC training step.
+        Esegue un passo di addestramento SAC.
         
         Returns:
-            Actor loss and critic loss
+            Loss dell'actor e loss del critic
         """
         if len(self.replay_buffer) < self.batch_size:
             return 0.0, 0.0
         
-        # Sample batch from replay buffer
+        # Campiona batch dal buffer di replay
         batch = random.sample(self.replay_buffer, self.batch_size)
         states, actions, rewards, next_states, dones = map(np.array, zip(*batch))
         
-        # Ensure proper shapes
+        # Assicura forme appropriate
         states = tf.convert_to_tensor(states, dtype=tf.float32)
         actions = tf.convert_to_tensor(actions, dtype=tf.float32)
         rewards = tf.convert_to_tensor(rewards, dtype=tf.float32)
         next_states = tf.convert_to_tensor(next_states, dtype=tf.float32)
         dones = tf.convert_to_tensor(dones, dtype=tf.float32)
         
-        # Ensure rewards and dones have correct shape
+        # Assicura che ricompense e dones abbiano forma corretta
         if tf.rank(rewards) == 1:  # type: ignore
             rewards = tf.expand_dims(rewards, -1)
         if tf.rank(dones) == 1:  # type: ignore
@@ -215,18 +215,18 @@ class SACAgent:
     
     @tf.function
     def _train_critics(self, states, actions, rewards, next_states, dones):
-        """Train critic networks."""
-        # Get next actions from current policy
+        """Addestra reti critic."""
+        # Ottieni prossime azioni dalla policy corrente
         next_mean, next_log_std = self.actor(next_states)
         next_std = tf.exp(next_log_std)
         next_normal = tf.random.normal(tf.shape(next_mean))
         next_actions = next_mean + next_std * next_normal
         next_actions = tf.clip_by_value(next_actions, -1, 1)
         
-        # Calculate entropy bonus
+        # Calcola bonus entropia
         next_log_prob = self._log_prob(next_actions, next_mean, next_log_std)
         
-        # Target Q-values
+        # Q-values target
         target_q1 = self.target_critic1([next_states, next_actions])
         target_q2 = self.target_critic2([next_states, next_actions])
         target_q = tf.minimum(target_q1, target_q2)
@@ -241,7 +241,7 @@ class SACAgent:
             critic1_loss = tf.reduce_mean(tf.square(q1 - target_q))
             critic2_loss = tf.reduce_mean(tf.square(q2 - target_q))
         
-        # Update critics
+        # Aggiorna critics
         grad1 = tape1.gradient(critic1_loss, self.critic1.trainable_variables)
         grad2 = tape2.gradient(critic2_loss, self.critic2.trainable_variables)
         
@@ -252,7 +252,7 @@ class SACAgent:
     
     @tf.function
     def _train_actor(self, states):
-        """Train actor network."""
+        """Addestra rete actor."""
         with tf.GradientTape() as tape:
             mean, log_std = self.actor(states)
             std = tf.exp(log_std)
@@ -266,19 +266,19 @@ class SACAgent:
             q2 = self.critic2([states, actions])
             q = tf.minimum(q1, q2)
             
-            # Actor loss: maximize Q - entropy
+            # Loss actor: massimizza Q - entropia
             actor_loss = tf.reduce_mean(self.alpha * log_prob - q)
         
-        # Update actor
+        # Aggiorna actor
         grad = tape.gradient(actor_loss, self.actor.trainable_variables)
         self.actor_optimizer.apply_gradients(zip(grad, self.actor.trainable_variables))  # type: ignore
         
         return actor_loss
     
     def _log_prob(self, actions, mean, log_std):
-        """Calculate log probability of actions."""
+        """Calcola probabilità logaritmica delle azioni."""
         std = tf.exp(log_std)
-        # Calculate log probability of Gaussian distribution
+        # Calcola probabilità logaritmica della distribuzione Gaussiana
         log_prob = -0.5 * tf.reduce_sum(
             tf.square((actions - mean) / (std + 1e-8)) + 2 * log_std + tf.math.log(2 * np.pi),
             axis=-1, keepdims=True
@@ -286,7 +286,7 @@ class SACAgent:
         return log_prob
     
     def _soft_update_targets(self):
-        """Soft update target networks."""
+        """Aggiorna soft le reti target."""
         for target, source in [(self.target_critic1, self.critic1),
                               (self.target_critic2, self.critic2)]:
             for target_param, source_param in zip(target.trainable_variables,
@@ -296,7 +296,7 @@ class SACAgent:
                 )
     
     def save_agent(self, directory: str):
-        """Save agent networks."""
+        """Salva reti dell'agente."""
         os.makedirs(directory, exist_ok=True)
         if self.actor is not None:
             self.actor.save(f"{directory}/{self.agent_id}_actor.h5")
@@ -306,9 +306,9 @@ class SACAgent:
             self.critic2.save(f"{directory}/{self.agent_id}_critic2.h5")
     
     def load_agent(self, directory: str):
-        """Load agent networks."""
+        """Carica reti dell'agente."""
         try:
-            # Build networks if not already built
+            # Costruisce reti se non già costruite
             if self.actor is None:
                 self.actor = self._build_actor()
             if self.critic1 is None:
@@ -316,7 +316,7 @@ class SACAgent:
             if self.critic2 is None:
                 self.critic2 = self._build_critic()
             
-            # Load weights instead of full models
+            # Carica pesi invece di modelli completi
             self.actor.load_weights(f"{directory}/{self.agent_id}_actor.h5")
             self.critic1.load_weights(f"{directory}/{self.agent_id}_critic1.h5")
             self.critic2.load_weights(f"{directory}/{self.agent_id}_critic2.h5")
@@ -326,17 +326,17 @@ class SACAgent:
 
 class CentralizedSAC:
     """
-    Centralized SAC for multi-building control.
+    SAC centralizzato per controllo multi-edificio.
     """
     
     def __init__(self, building_count: int = 3, obs_dim: int = 28, **kwargs):
         """
-        Initialize centralized SAC controller.
+        Inizializza controllore SAC centralizzato.
         
         Args:
-            building_count: Number of buildings
-            obs_dim: Observation dimension per building
-            **kwargs: Arguments for SACAgent
+            building_count: Numero di edifici
+            obs_dim: Dimensione osservazioni per edificio
+            **kwargs: Argomenti per SACAgent
         """
         self.building_count = building_count
         total_state_dim = building_count * obs_dim
@@ -356,7 +356,7 @@ class CentralizedSAC:
         }
     
     def train_episode(self, env, max_steps: int = 8760):
-        """Train centralized SAC agent."""
+        """Addestra agente SAC centralizzato."""
         observations = env.reset()
         episode_reward = 0
         
@@ -439,22 +439,26 @@ class DecentralizedSAC:
         }
     
     def train_episode(self, env, max_steps: int = 8760):
-        """Train all decentralized SAC agents."""
+        """Addestra tutti gli agenti SAC decentralizzati."""
         observations = env.reset()
         episode_reward = 0
         
         for step in range(max_steps):
-            # Each agent selects action for its building
+            # Ogni agente seleziona azione per il proprio edificio
             actions = []
             for i, agent in enumerate(self.agents):
                 obs = observations[i] if isinstance(observations, list) else observations
                 action = agent.select_action(obs, training=True)
-                actions.append(action[0])  # Single action per building
+                # Gestisce sia azioni scalari che array
+                if np.isscalar(action):
+                    actions.append(action)
+                else:
+                    actions.append(action[0])  # Single action per building
             
             # Environment step
             next_observations, rewards, done, info = env.step(actions)
             
-            # Store transitions and train each agent
+            # Memorizza transizioni e addestra ogni agente
             total_reward = 0
             for i, agent in enumerate(self.agents):
                 obs = observations[i] if isinstance(observations, list) else observations
@@ -483,11 +487,11 @@ class DecentralizedSAC:
         return episode_reward
     
     def save_agents(self, directory: str):
-        """Save all decentralized agents."""
+        """Salva tutti gli agenti decentralizzati."""
         for i, agent in enumerate(self.agents):
             agent.save_agent(f"{directory}/building_{i}")
     
     def load_agents(self, directory: str):
-        """Load all decentralized agents."""
+        """Carica tutti gli agenti decentralizzati."""
         for i, agent in enumerate(self.agents):
             agent.load_agent(f"{directory}/building_{i}")

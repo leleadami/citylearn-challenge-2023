@@ -1,76 +1,55 @@
 # Python
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
+*.pyc
+*.pyo
 *.egg-info/
-.installed.cfg
-*.egg
-
-# Virtual Environment
-citylearn_env/
-venv/
-env/
+.env
 .venv/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# Data files (if large)
-data/*.csv
-data/*.parquet
-data/*.h5
-
-# Model checkpoints and results
-results/models/
-results/checkpoints/
-*.h5
-*.pkl
-*.joblib
-
-# Logs
-logs/
+venv/
 *.log
 
-# IDE
+# Data files (too large for GitHub)
+data/
+*.csv
+*.pkl
+*.parquet
+
+# Large result files (can be regenerated)
+results/neural_networks/*.json
+results/rl_experiments/
+
+# Model checkpoints (too large)
+models/
+*.h5
+*.model
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# Claude Code  
-.claude/
-.claude/*
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
 
-# OS
-.DS_Store
-Thumbs.db
-
-# Thesis folder (not for GitHub)
-thesis/
-
-# TensorBoard logs
-tb_logs/
-tensorboard_logs/
+# LaTeX auxiliary files
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.lof
+*.lot
 
 # Temporary files
 *.tmp
 *.temp
-
-# Large datasets
-*.zip
-*.tar.gz
-*.rar

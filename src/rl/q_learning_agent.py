@@ -1,8 +1,8 @@
 """
-Q-Learning Agent for CityLearn Challenge 2023
+Agente Q-Learning per CityLearn Challenge 2023
 
-Implements both centralized and decentralized Q-learning approaches
-for building energy management and demand response.
+Implementa approcci Q-learning sia centralizzati che decentralizzati
+per gestione energetica degli edifici e demand response.
 """
 
 import numpy as np
@@ -15,10 +15,10 @@ import os
 
 class QLearningAgent:
     """
-    Q-Learning agent for building energy control.
+    Agente Q-Learning per controllo energetico degli edifici.
     
-    Supports both centralized (single agent for all buildings) and
-    decentralized (independent agents per building) architectures.
+    Supporta architetture sia centralizzate (singolo agente per tutti gli edifici) che
+    decentralizzate (agenti indipendenti per edificio).
     """
     
     def __init__(self, 
@@ -30,16 +30,16 @@ class QLearningAgent:
                  epsilon: float = 0.1,
                  epsilon_decay: float = 0.995):
         """
-        Initialize Q-Learning agent.
+        Inizializza agente Q-Learning.
         
         Args:
-            agent_id: Unique identifier for the agent
-            state_bins: Number of bins for state discretization
-            action_bins: Number of discrete actions
+            agent_id: Identificatore unico per l'agente
+            state_bins: Numero di bin per discretizzazione dello stato
+            action_bins: Numero di azioni discrete
             learning_rate: Learning rate alpha
-            discount_factor: Future reward discount gamma
-            epsilon: Exploration probability
-            epsilon_decay: Epsilon decay rate
+            discount_factor: Fattore di sconto ricompense future gamma
+            epsilon: Probabilità di esplorazione
+            epsilon_decay: Tasso di decadimento epsilon
         """
         self.agent_id = agent_id
         self.state_bins = state_bins
@@ -52,25 +52,25 @@ class QLearningAgent:
         # Q-table: state -> action -> Q-value
         self.q_table = defaultdict(lambda: defaultdict(float))
         
-        # Training metrics
+        # Metriche di addestramento
         self.training_rewards = []
         self.training_losses = []
         self.episode_count = 0
     
     def discretize_state(self, state: np.ndarray) -> Tuple:
         """
-        Discretize continuous state space into bins.
+        Discretizza spazio di stato continuo in bin.
         
         Args:
-            state: Continuous state vector
+            state: Vettore di stato continuo
             
         Returns:
-            Discretized state tuple
+            Tupla di stato discretizzato
         """
-        # Normalize state to [0, 1] range
+        # Normalizza stato al range [0, 1]
         normalized_state = np.clip(state, -3, 3) / 6 + 0.5
         
-        # Discretize to bins
+        # Discretizza in bin
         discrete_state = tuple(
             int(s * (self.state_bins - 1)) for s in normalized_state
         )
@@ -79,22 +79,22 @@ class QLearningAgent:
     
     def select_action(self, state: np.ndarray, training: bool = True) -> int:
         """
-        Select action using epsilon-greedy policy.
+        Seleziona azione utilizzando policy epsilon-greedy.
         
         Args:
-            state: Current state
-            training: Whether in training mode
+            state: Stato corrente
+            training: Se in modalità di addestramento
             
         Returns:
-            Selected action index
+            Indice dell'azione selezionata
         """
         discrete_state = self.discretize_state(state)
         
-        # Epsilon-greedy exploration
+        # Esplorazione epsilon-greedy
         if training and np.random.random() < self.epsilon:
             return np.random.randint(0, self.action_bins)
         
-        # Greedy action selection
+        # Selezione azione greedy
         q_values = [
             self.q_table[discrete_state][action] 
             for action in range(self.action_bins)
@@ -105,31 +105,31 @@ class QLearningAgent:
     def update_q_table(self, state: np.ndarray, action: int, 
                        reward: float, next_state: np.ndarray) -> float:
         """
-        Update Q-table using Q-learning update rule.
+        Aggiorna Q-table utilizzando regola di aggiornamento Q-learning.
         
         Args:
-            state: Current state
-            action: Action taken
-            reward: Reward received
-            next_state: Next state
+            state: Stato corrente
+            action: Azione presa
+            reward: Ricompensa ricevuta
+            next_state: Prossimo stato
             
         Returns:
-            TD error (for monitoring)
+            Errore TD (per monitoraggio)
         """
         discrete_state = self.discretize_state(state)
         discrete_next_state = self.discretize_state(next_state)
         
-        # Current Q-value
+        # Q-value corrente
         current_q = self.q_table[discrete_state][action]
         
-        # Best next action Q-value
+        # Miglior Q-value della prossima azione
         next_q_values = [
             self.q_table[discrete_next_state][a] 
             for a in range(self.action_bins)
         ]
         max_next_q = max(next_q_values) if next_q_values else 0.0
         
-        # Q-learning update: Q(s,a) = Q(s,a) + α[r + γ*max_Q(s',a') - Q(s,a)]
+        # Aggiornamento Q-learning: Q(s,a) = Q(s,a) + α[r + γ*max_Q(s',a') - Q(s,a)]
         target_q = reward + self.discount_factor * max_next_q
         td_error = target_q - current_q
         
@@ -138,11 +138,11 @@ class QLearningAgent:
         return abs(td_error)
     
     def decay_epsilon(self):
-        """Decay exploration probability."""
+        """Diminuisce probabilità di esplorazione."""
         self.epsilon = max(0.01, self.epsilon * self.epsilon_decay)
     
     def save_agent(self, filepath: str):
-        """Save Q-table and agent parameters."""
+        """Salva Q-table e parametri dell'agente."""
         agent_data = {
             'agent_id': self.agent_id,
             'q_table': {
@@ -168,7 +168,7 @@ class QLearningAgent:
             json.dump(agent_data, f, indent=2)
     
     def load_agent(self, filepath: str):
-        """Load Q-table and agent parameters."""
+        """Carica Q-table e parametri dell'agente."""
         with open(filepath, 'r') as f:
             agent_data = json.load(f)
         

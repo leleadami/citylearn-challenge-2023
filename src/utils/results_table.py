@@ -33,12 +33,13 @@ def create_results_table(results=None):
     
     # 1. Building-specific targets
     buildings = ['Building_1', 'Building_2', 'Building_3']
-    for target in ['cooling_demand', 'solar_generation']:
+    for target in ['solar_generation']:
         for building in buildings:
             rows.append(f"{target}_{building}")
     
-    # 2. Neighborhood aggregation
-    rows.extend(['neighborhood_cooling', 'neighborhood_solar'])
+    # 2. Global and neighborhood targets (professor requirements)
+    # Note: neighborhood_carbon omitted - carbon_intensity is already global
+    rows.extend(['carbon_intensity', 'neighborhood_solar'])
     
     # Crea DataFrame vuoto
     table = pd.DataFrame(index=rows, columns=algorithms)
@@ -56,6 +57,15 @@ def create_results_table(results=None):
                 if 'Neighborhood' in results[target][algorithm]:
                     if 'Neighborhood' in results[target][algorithm]['Neighborhood']:
                         rmse = results[target][algorithm]['Neighborhood']['Neighborhood'].get('rmse', None)
+                        if rmse and rmse != 999:
+                            table.loc[target, algorithm] = f"{rmse:.2f}"
+                        else:
+                            table.loc[target, algorithm] = "FAIL"
+            elif target == 'carbon_intensity':
+                # Carbon intensity: global target
+                if 'Carbon_Global' in results[target][algorithm]:
+                    if 'Carbon_Global' in results[target][algorithm]['Carbon_Global']:
+                        rmse = results[target][algorithm]['Carbon_Global']['Carbon_Global'].get('rmse', None)
                         if rmse and rmse != 999:
                             table.loc[target, algorithm] = f"{rmse:.2f}"
                         else:

@@ -208,6 +208,7 @@ class SklearnForecaster(BaseForecaster):
     def __init__(self, name: str, model):
         super().__init__(name)
         self.model = model
+        self._needs_flattening = False  # Attributo per gestione flattening dati
         
     def fit(self, X_train: np.ndarray, y_train: np.ndarray, 
             X_val: Optional[np.ndarray] = None, y_val: Optional[np.ndarray] = None, **kwargs) -> None:
@@ -224,7 +225,12 @@ class SklearnForecaster(BaseForecaster):
         if not self.is_fitted:
             raise ValueError(f"{self.name} model must be fitted before prediction")
             
-        X_flat = X.reshape(X.shape[0], -1)
+        # Applica flattening se necessario (per compatibilità con fallback LSTM)
+        if self._needs_flattening or len(X.shape) > 2:
+            X_flat = X.reshape(X.shape[0], -1)
+        else:
+            X_flat = X
+            
         predictions = self.model.predict(X_flat)
         
         # Return as 2D array for consistency
@@ -265,5 +271,106 @@ def get_baseline_forecasters() -> Dict[str, BaseForecaster]:
                 max_iter=500,
                 random_state=42
             )
+        ),
+        'Ensemble_Voting': EnsembleForecaster(
+            'Ensemble_Voting',
+            ensemble_type='voting'
+        ),
+        'Ensemble_Stacking': EnsembleForecaster(
+            'Ensemble_Stacking', 
+            ensemble_type='stacking'
         )
     }
+
+
+class EnsembleForecaster(BaseForecaster):
+    """
+    Ensemble forecaster that combines multiple base models.
+    Combines Random Forest, Linear Regression, and ANN for better performance.
+    """
+    
+    def __init__(self, name: str, ensemble_type: str = 'voting'):
+        """
+        Initialize ensemble forecaster.
+        
+        Args:
+            name: Name of the ensemble
+            ensemble_type: 'voting' for simple average, 'stacking' for meta-learner
+        """
+        super().__init__(name)
+        self.ensemble_type = ensemble_type
+        self.base_models = {}
+        self.meta_learner = None
+        self.weights = None
+        
+    def fit(self, X_train: np.ndarray, y_train: np.ndarray, 
+            X_val: Optional[np.ndarray] = None, y_val: Optional[np.ndarray] = None, **kwargs) -> None:
+        """Train ensemble of base models."""
+        from sklearn.ensemble import RandomForestRegressor
+        from sklearn.linear_model import LinearRegression
+        from sklearn.neural_network import MLPRegressor
+        
+        # Flatten sequences for traditional ML models
+        X_train_flat = X_train.reshape(X_train.shape[0], -1)
+        X_val_flat = X_val.reshape(X_val.shape[0], -1) if X_val is not None else None
+        
+        # Define base models for ensemble
+        self.base_models = {
+            'rf': RandomForestRegressor(n_estimators=50, random_state=42),
+            'lr': LinearRegression(),
+            'ann': MLPRegressor(hidden_layer_sizes=(32,), max_iter=200, random_state=42)
+        }
+        
+        # Train base models
+        base_predictions_train = []
+        base_predictions_val = []
+        
+        for name, model in self.base_models.items():
+            model.fit(X_train_flat, y_train)
+            
+            # Get predictions for meta-learner training
+            train_pred = model.predict(X_train_flat)
+            base_predictions_train.append(train_pred)
+            
+            if X_val_flat is not None:
+                val_pred = model.predict(X_val_flat)
+                base_predictions_val.append(val_pred)
+        
+        # Stack predictions
+        base_predictions_train = np.column_stack(base_predictions_train)
+        
+        if self.ensemble_type == 'stacking' and X_val_flat is not None:
+            # Train meta-learner on validation predictions
+            base_predictions_val = np.column_stack(base_predictions_val)
+            self.meta_learner = LinearRegression()
+            self.meta_learner.fit(base_predictions_val, y_val)
+        elif self.ensemble_type == 'voting':
+            # Simple equal weights (can be optimized)
+            self.weights = np.ones(len(self.base_models)) / len(self.base_models)
+        
+        self.is_fitted = True
+        
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """Make ensemble predictions."""
+        if not self.is_fitted:
+            raise ValueError("Model must be fitted before prediction")
+            
+        # Flatten sequences
+        X_flat = X.reshape(X.shape[0], -1)
+        
+        # Get predictions from base models
+        base_predictions = []
+        for model in self.base_models.values():
+            pred = model.predict(X_flat)
+            base_predictions.append(pred)
+        
+        base_predictions = np.column_stack(base_predictions)
+        
+        if self.ensemble_type == 'stacking' and self.meta_learner is not None:
+            # Use meta-learner
+            ensemble_pred = self.meta_learner.predict(base_predictions)
+        else:
+            # Voting (weighted average)
+            ensemble_pred = np.average(base_predictions, axis=1, weights=self.weights)
+        
+        return ensemble_pred

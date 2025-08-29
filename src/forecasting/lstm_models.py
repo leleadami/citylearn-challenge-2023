@@ -31,15 +31,15 @@ from .base_models import BaseForecaster
 
 class LSTMForecaster(BaseForecaster):
     """
-    LSTM neural network for building energy time series forecasting.
+    Rete neurale LSTM per previsione di serie temporali energetiche degli edifici.
     
-    This implementation provides a flexible LSTM architecture that can adapt
-    to different building types, energy variables, and forecasting horizons.
-    Key features:
-    - Multi-layer LSTM architecture
-    - Dropout regularization for overfitting prevention
-    - Early stopping and learning rate reduction
-    - Automatic input shape adaptation
+    Questa implementazione fornisce un'architettura LSTM flessibile che può adattarsi
+    a diversi tipi di edifici, variabili energetiche e orizzonti di previsione.
+    Caratteristiche principali:
+    - Architettura LSTM multi-layer
+    - Regolarizzazione dropout per prevenire overfitting
+    - Early stopping e riduzione del learning rate
+    - Adattamento automatico della forma di input
     """
 
     def __init__(self, 
@@ -49,14 +49,14 @@ class LSTMForecaster(BaseForecaster):
                  dropout_rate: float = 0.2,
                  learning_rate: float = 0.001):
         """
-        Initialize LSTM forecaster with architecture parameters.
+        Inizializza il previsore LSTM con parametri di architettura.
         
         Args:
-            sequence_length: Number of historical time steps to use for prediction
-            hidden_units: Number of LSTM units in each layer
-            num_layers: Number of stacked LSTM layers (depth of network)
-            dropout_rate: Fraction of units to drop for regularization
-            learning_rate: Initial learning rate for optimizer
+            sequence_length: Numero di step temporali storici da usare per la previsione
+            hidden_units: Numero di unità LSTM in ogni layer
+            num_layers: Numero di layer LSTM impilati (profondità della rete)
+            dropout_rate: Frazione di unità da escludere per regolarizzazione
+            learning_rate: Learning rate iniziale per l'ottimizzatore
         """
         super().__init__("LSTM")
         self.sequence_length = sequence_length
@@ -65,27 +65,27 @@ class LSTMForecaster(BaseForecaster):
         self.dropout_rate = dropout_rate
         self.learning_rate = learning_rate
         
-        # Model will be built during fit() to adapt to input dimensions
+        # Il modello verrà costruito durante fit() per adattarsi alle dimensioni di input
         self.model = None
         
     def _build_model(self, input_shape: Tuple[int, int]) -> None:
         """
-        Construct the LSTM neural network architecture.
+        Costruisce l'architettura della rete neurale LSTM.
         
-        Creates a deep LSTM network with the specified number of layers and
-        regularization. The architecture is:
-        1. Input layer accepting sequences of shape (sequence_length, features)
-        2. Multiple LSTM layers with dropout regularization
-        3. Dense output layer for prediction
+        Crea una rete LSTM profonda con il numero specificato di layer e
+        regolarizzazione. L'architettura è:
+        1. Layer di input che accetta sequenze di forma (sequence_length, features)
+        2. Layer LSTM multipli con regolarizzazione dropout
+        3. Layer denso di output per la previsione
         
         Args:
-            input_shape: Shape of input sequences (sequence_length, n_features)
+            input_shape: Forma delle sequenze di input (sequence_length, n_features)
         """
         
-        # Initialize sequential model (layers stacked in order)
+        # Inizializza modello sequenziale (layer impilati in ordine)
         self.model = Sequential()
         
-        # First LSTM layer - must specify input shape for Keras
+        # Primo layer LSTM - deve specificare la forma di input per Keras
         self.model.add(LSTM(
             self.hidden_units,
             return_sequences=True if self.num_layers > 1 else False,
@@ -94,7 +94,7 @@ class LSTMForecaster(BaseForecaster):
         ))
         self.model.add(Dropout(self.dropout_rate, name="dropout_1"))
         
-        # Add additional LSTM layers if specified
+        # Aggiungi layer LSTM aggiuntivi se specificato
         for i in range(1, self.num_layers):
             return_sequences = i < self.num_layers - 1
             
@@ -105,10 +105,10 @@ class LSTMForecaster(BaseForecaster):
             ))
             self.model.add(Dropout(self.dropout_rate, name=f"dropout_{i+1}"))
         
-        # Output layer - Dense layer for final prediction
+        # Layer di output - Layer denso per previsione finale
         self.model.add(Dense(1, name="prediction_output"))
         
-        # Compile model with optimizer, loss function, and metrics
+        # Compila modello con ottimizzatore, funzione di loss e metriche
         self.model.compile(
             optimizer=Adam(learning_rate=self.learning_rate), # type: ingnore # type: ignore
             loss='mse',
@@ -122,32 +122,32 @@ class LSTMForecaster(BaseForecaster):
             batch_size: int = 32,
             verbose: int = 0) -> None:
         """
-        Train the LSTM model on building energy time series data.
+        Addestra il modello LSTM su dati di serie temporali energetiche degli edifici.
         
         Args:
-            X_train: Training sequences of shape (n_samples, sequence_length, n_features)
-            y_train: Training targets of shape (n_samples, 1)
-            X_val: Optional validation sequences
-            y_val: Optional validation targets
-            epochs: Maximum number of training epochs
-            batch_size: Number of samples per batch
-            verbose: Training verbosity level
+            X_train: Sequenze di addestramento di forma (n_samples, sequence_length, n_features)
+            y_train: Target di addestramento di forma (n_samples, 1)
+            X_val: Sequenze di validazione opzionali
+            y_val: Target di validazione opzionali
+            epochs: Numero massimo di epoche di addestramento
+            batch_size: Numero di campioni per batch
+            verbose: Livello di verbosità dell'addestramento
         """
-        # Ensure correct input shape for LSTM
+        # Assicura forma di input corretta per LSTM
         if len(X_train.shape) == 2:
             X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], 1)
         
         if len(y_train.shape) == 1:
             y_train = y_train.reshape(-1, 1)
             
-        # Build model architecture based on input shape
+        # Costruisce architettura del modello basata sulla forma di input
         if self.model is None:
             input_shape = (X_train.shape[1], X_train.shape[2])
             self._build_model(input_shape)
             
         assert self.model is not None
         
-        # Setup callbacks for training optimization
+        # Configura callback per ottimizzazione dell'addestramento
         callbacks = [
             EarlyStopping(
                 monitor='loss',
@@ -164,7 +164,7 @@ class LSTMForecaster(BaseForecaster):
             )
         ]
         
-        # Prepare validation data if provided
+        # Prepara dati di validazione se forniti
         validation_data = None
         if X_val is not None and y_val is not None:
             if len(X_val.shape) == 2:
@@ -173,7 +173,7 @@ class LSTMForecaster(BaseForecaster):
                 y_val = y_val.reshape(-1, 1)
             validation_data = (X_val, y_val)
         
-        # Train the model
+        # Addestra il modello
         history = self.model.fit(
             X_train, y_train,
             validation_data=validation_data,
@@ -189,19 +189,19 @@ class LSTMForecaster(BaseForecaster):
     
     def predict(self, X: np.ndarray) -> np.ndarray:
         """
-        Generate predictions for new input sequences.
+        Genera previsioni per nuove sequenze di input.
         
         Args:
-            X: Input sequences of shape (n_samples, sequence_length, n_features)
+            X: Sequenze di input di forma (n_samples, sequence_length, n_features)
             
         Returns:
-            Predictions of shape (n_samples, 1)
+            Previsioni di forma (n_samples, 1)
         """
         assert self.model is not None
         if not self.is_fitted:
             raise ValueError("Model must be fitted before making predictions")
         
-        # Ensure correct input shape
+        # Assicura forma di input corretta
         if len(X.shape) == 2:
             X = X.reshape(X.shape[0], X.shape[1], 1)
 
@@ -211,10 +211,10 @@ class LSTMForecaster(BaseForecaster):
 
 class BidirectionalLSTMForecaster(BaseForecaster):
     """
-    Bidirectional LSTM for capturing both forward and backward temporal patterns.
+    LSTM bidirezionale per catturare pattern temporali sia in avanti che all'indietro.
     
-    Useful for energy forecasting when future context (e.g., weather forecasts,
-    scheduled events) might be available and relevant for current predictions.
+    Utile per previsioni energetiche quando il contesto futuro (es. previsioni meteo,
+    eventi programmati) potrebbe essere disponibile e rilevante per previsioni attuali.
     """
     
     def __init__(self, 
@@ -223,7 +223,7 @@ class BidirectionalLSTMForecaster(BaseForecaster):
                  num_layers: int = 2,
                  dropout_rate: float = 0.2,
                  learning_rate: float = 0.001):
-        """Initialize Bidirectional LSTM forecaster."""
+        """Inizializza previsore LSTM Bidirezionale."""
         super().__init__("Bidirectional_LSTM")
         self.sequence_length = sequence_length
         self.hidden_units = hidden_units
@@ -233,12 +233,12 @@ class BidirectionalLSTMForecaster(BaseForecaster):
         self.model = None
         
     def _build_model(self, input_shape: Tuple[int, int]) -> None:
-        """Build bidirectional LSTM architecture."""
+        """Costruisce architettura LSTM bidirezionale."""
         from keras.layers import Bidirectional
         
         self.model = Sequential()
         
-        # First bidirectional LSTM layer
+        # Primo layer LSTM bidirezionale
         self.model.add(Bidirectional(
             LSTM(self.hidden_units, 
                  return_sequences=True if self.num_layers > 1 else False),
@@ -247,7 +247,7 @@ class BidirectionalLSTMForecaster(BaseForecaster):
         ))
         self.model.add(Dropout(self.dropout_rate))
         
-        # Additional bidirectional layers
+        # Layer bidirezionali aggiuntivi
         for i in range(1, self.num_layers):
             return_sequences = i < self.num_layers - 1
             self.model.add(Bidirectional(
@@ -272,8 +272,8 @@ class BidirectionalLSTMForecaster(BaseForecaster):
             epochs: int = 100,
             batch_size: int = 32,
             verbose: int = 0) -> None:
-        """Train the bidirectional LSTM model."""
-        # Same implementation as regular LSTM
+        """Addestra il modello LSTM bidirezionale."""
+        # Stessa implementazione dell'LSTM normale
         if len(X_train.shape) == 2:
             X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], 1)
         
@@ -313,7 +313,7 @@ class BidirectionalLSTMForecaster(BaseForecaster):
         return history
     
     def predict(self, X: np.ndarray) -> np.ndarray:
-        """Generate predictions using bidirectional LSTM."""
+        """Genera previsioni utilizzando LSTM bidirezionale."""
         assert self.model is not None
         if not self.is_fitted:
             raise ValueError("Model must be fitted before making predictions")
@@ -327,10 +327,10 @@ class BidirectionalLSTMForecaster(BaseForecaster):
 
 class ConvLSTMForecaster(BaseForecaster):
     """
-    Convolutional LSTM for capturing spatial-temporal patterns in building data.
+    LSTM Convoluzionale per catturare pattern spazio-temporali nei dati degli edifici.
     
-    Useful when dealing with multiple buildings or spatial features like
-    temperature distributions, solar irradiance patterns, etc.
+    Utile quando si lavora con edifici multipli o caratteristiche spaziali come
+    distribuzioni di temperatura, pattern di irraggiamento solare, ecc.
     """
     
     def __init__(self, 
@@ -340,7 +340,7 @@ class ConvLSTMForecaster(BaseForecaster):
                  lstm_units: int = 50,
                  dropout_rate: float = 0.2,
                  learning_rate: float = 0.001):
-        """Initialize ConvLSTM forecaster."""
+        """Inizializza previsore ConvLSTM."""
         super().__init__("ConvLSTM")
         self.sequence_length = sequence_length
         self.filters = filters
@@ -351,12 +351,12 @@ class ConvLSTMForecaster(BaseForecaster):
         self.model = None
         
     def _build_model(self, input_shape: Tuple[int, int]) -> None:
-        """Build CNN-LSTM hybrid architecture."""
+        """Costruisce architettura ibrida CNN-LSTM."""
         from keras.layers import Conv1D, MaxPooling1D, Flatten
         
         self.model = Sequential()
         
-        # Convolutional layers for feature extraction
+        # Layer convoluzionali per estrazione caratteristiche
         self.model.add(Conv1D(
             filters=self.filters,
             kernel_size=self.kernel_size,
@@ -367,7 +367,7 @@ class ConvLSTMForecaster(BaseForecaster):
         self.model.add(MaxPooling1D(pool_size=2, name="maxpool1d_1"))
         self.model.add(Dropout(self.dropout_rate))
         
-        # Additional conv layer
+        # Layer convoluzionale aggiuntivo
         self.model.add(Conv1D(
             filters=self.filters//2,
             kernel_size=self.kernel_size,
@@ -376,7 +376,7 @@ class ConvLSTMForecaster(BaseForecaster):
         ))
         self.model.add(MaxPooling1D(pool_size=2, name="maxpool1d_2"))
         
-        # LSTM layer for temporal modeling
+        # Layer LSTM per modellazione temporale
         self.model.add(LSTM(
             self.lstm_units,
             return_sequences=False,
@@ -400,8 +400,8 @@ class ConvLSTMForecaster(BaseForecaster):
             epochs: int = 100,
             batch_size: int = 32,
             verbose: int = 0) -> None:
-        """Train the ConvLSTM model."""
-        # Same training logic as other LSTM variants
+        """Addestra il modello ConvLSTM."""
+        # Stessa logica di addestramento delle altre varianti LSTM
         if len(X_train.shape) == 2:
             X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], 1)
         
@@ -441,7 +441,7 @@ class ConvLSTMForecaster(BaseForecaster):
         return history
     
     def predict(self, X: np.ndarray) -> np.ndarray:
-        """Generate predictions using ConvLSTM."""
+        """Genera previsioni utilizzando ConvLSTM."""
         assert self.model is not None
         if not self.is_fitted:
             raise ValueError("Model must be fitted before making predictions")

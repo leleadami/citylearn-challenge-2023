@@ -1,29 +1,28 @@
 """
-Data utility functions for CityLearn project.
+Funzioni di utilità per dati del progetto CityLearn.
 
-This module provides comprehensive data processing utilities specifically designed
-for the CityLearn Challenge 2023, focusing on building energy forecasting and
-optimization. The CityLearn Challenge involves predicting and controlling energy
-consumption, storage, and generation across multiple buildings in a smart city
-neighborhood.
+Questo modulo fornisce utilità complete per l'elaborazione dei dati specificamente progettate
+per la CityLearn Challenge 2023, concentrandosi sulla previsione e ottimizzazione energetica
+degli edifici. La CityLearn Challenge coinvolge la previsione e il controllo di consumo,
+accumulo e generazione di energia attraverso edifici multipli in un quartiere di smart city.
 
-Key functionalities:
-1. Data loading from CityLearn CSV format with standardized building schemas
-2. Time series sequence creation for forecasting models (LSTM, Transformers)
-3. Cross-building generalization testing for model robustness
-4. Neighborhood-level aggregation for district energy management
-5. Standardized preprocessing pipeline with proper scaling and normalization
+Funzionalità principali:
+1. Caricamento dati da formato CSV CityLearn con schemi standardizzati degli edifici
+2. Creazione sequenze temporali per modelli di previsione (LSTM, Transformers)
+3. Test di generalizzazione cross-building per robustezza del modello
+4. Aggregazione a livello di quartiere per gestione energetica distrettuale
+5. Pipeline di preprocessing standardizzata con scaling e normalizzazione appropriati
 
-The CityLearn data structure includes:
-- Building-specific data: electrical loads, solar generation, battery states
-- Environmental data: weather conditions, carbon intensity, pricing
-- Time series format: hourly measurements with seasonal patterns
+La struttura dati CityLearn include:
+- Dati specifici degli edifici: carichi elettrici, generazione solare, stati batterie
+- Dati ambientali: condizioni meteorologiche, intensità di carbonio, prezzi
+- Formato serie temporali: misurazioni orarie con pattern stagionali
 
-Design principles:
-- Maintain temporal order in splits to avoid data leakage
-- Preserve building-specific characteristics for personalized models
-- Enable cross-building evaluation to test generalization
-- Support both individual building and neighborhood-level analysis
+Principi di design:
+- Mantenere ordine temporale nelle divisioni per evitare data leakage
+- Preservare caratteristiche specifiche degli edifici per modelli personalizzati
+- Abilitare valutazione cross-building per testare generalizzazione
+- Supportare analisi sia a livello di singolo edificio che di quartiere
 """
 
 import pandas as pd
@@ -33,6 +32,73 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from typing import Dict, Tuple, List, Optional
 import os
+
+
+def load_complete_citylearn_dataset(data_path: str = "data") -> Dict[str, pd.DataFrame]:
+    """
+    Carica dataset completo CityLearn 2023 inclusi edifici e intensità di carbonio.
+    
+    Carica dati da tutte le fasi disponibili e li combina per massimizzare i dati di addestramento.
+    Include sia dati specifici degli edifici che dati ambientali (intensità di carbonio).
+    Requisito professore: focus su previsione solar_generation e carbon_intensity.
+    
+    Args:
+        data_path: Percorso base alla directory dei dati
+        
+    Returns:
+        Dizionario contenente dati degli edifici e dati intensità di carbonio
+    """
+    print("[DATA] Loading complete CityLearn 2023 dataset...")
+    
+    # Tutte le fasi disponibili per massimi dati
+    phases = [
+        'citylearn_challenge_2023_phase_1',
+        'citylearn_challenge_2023_phase_2_local_evaluation', 
+        'citylearn_challenge_2023_phase_2_online_evaluation_1',
+        'citylearn_challenge_2023_phase_2_online_evaluation_2',
+        'citylearn_challenge_2023_phase_2_online_evaluation_3'
+    ]
+    
+    buildings = {}
+    
+    # Carica dati degli edifici
+    for building_id in [1, 2, 3]:
+        building_name = f'Building_{building_id}'
+        all_data = []
+        
+        for phase in phases:
+            file_path = f'{data_path}/{phase}/Building_{building_id}.csv'
+            if os.path.exists(file_path):
+                data = pd.read_csv(file_path)
+                # Aggiungi caratteristiche temporali per analisi
+                data = create_time_features(data)
+                all_data.append(data)
+                print(f"  Loaded {phase}: {len(data)} samples")
+        
+        if all_data:
+            combined = pd.concat(all_data, ignore_index=True)
+            combined = combined.drop_duplicates().reset_index(drop=True)
+            buildings[building_name] = combined
+            print(f"  {building_name}: {len(combined)} total samples ({len(combined)/24:.1f} days)")
+    
+    # Carica dati intensità di carbonio (requisito professore)
+    print("[DATA] Loading carbon intensity data...")
+    carbon_data_combined = []
+    for phase in phases:
+        carbon_path = f'{data_path}/{phase}/carbon_intensity.csv'
+        if os.path.exists(carbon_path):
+            carbon_data = pd.read_csv(carbon_path)
+            carbon_data = create_time_features(carbon_data)
+            carbon_data_combined.append(carbon_data)
+            print(f"  Loaded carbon intensity {phase}: {len(carbon_data)} samples")
+    
+    if carbon_data_combined:
+        carbon_combined = pd.concat(carbon_data_combined, ignore_index=True)
+        carbon_combined = carbon_combined.drop_duplicates().reset_index(drop=True)
+        buildings['carbon_intensity_data'] = carbon_combined
+        print(f"  Carbon intensity: {len(carbon_combined)} total samples")
+    
+    return buildings
 
 
 def load_building_data(data_path: str = "data") -> Dict[str, pd.DataFrame]:
@@ -360,66 +426,66 @@ def prepare_forecasting_data(building_data: Dict[str, pd.DataFrame],
 
 def calculate_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, float]:
     """
-    Calculate comprehensive regression metrics for energy forecasting evaluation.
+    Calcola metriche complete di regressione per valutazione previsioni energetiche.
     
-    This function computes standard metrics used in energy forecasting research
-    and the CityLearn Challenge. Each metric provides different insights into
-    model performance and forecasting quality.
+    Questa funzione calcola metriche standard utilizzate nella ricerca di previsioni energetiche
+    e nella CityLearn Challenge. Ogni metrica fornisce diverse intuizioni sulle
+    prestazioni del modello e qualità delle previsioni.
     
-    Metrics explanation and interpretation:
+    Spiegazione e interpretazione delle metriche:
     
     1. MAE (Mean Absolute Error):
-       - Average absolute difference between predictions and actual values
-       - Units: Same as target variable (e.g., kWh)
-       - Interpretation: Average forecasting error magnitude
-       - Robust to outliers, easy to interpret
-       - Lower is better
+       - Differenza assoluta media tra previsioni e valori reali
+       - Unità: Stesse della variabile target (es. kWh)
+       - Interpretazione: Magnitudine media dell'errore di previsione
+       - Robusta agli outlier, facile da interpretare
+       - Più basso è meglio
     
     2. MSE (Mean Squared Error):
-       - Average squared difference between predictions and actual values
-       - Units: Square of target variable (e.g., kWh²)
-       - Interpretation: Emphasizes larger errors more than MAE
-       - Sensitive to outliers, used in optimization
-       - Lower is better
+       - Differenza quadrata media tra previsioni e valori reali
+       - Unità: Quadrato della variabile target (es. kWh²)
+       - Interpretazione: Enfatizza errori maggiori più del MAE
+       - Sensibile agli outlier, usato nell'ottimizzazione
+       - Più basso è meglio
     
     3. RMSE (Root Mean Squared Error):
-       - Square root of MSE, returns to original units
-       - Units: Same as target variable (e.g., kWh)
-       - Interpretation: Standard deviation of forecasting errors
-       - More interpretable than MSE, commonly reported
-       - Lower is better
+       - Radice quadrata del MSE, ritorna alle unità originali
+       - Unità: Stesse della variabile target (es. kWh)
+       - Interpretazione: Deviazione standard degli errori di previsione
+       - Più interpretabile del MSE, comunemente riportato
+       - Più basso è meglio
     
-    4. R² (R-squared, Coefficient of Determination):
-       - Proportion of variance in target explained by predictions
-       - Range: (-∞, 1], perfect prediction = 1
-       - Interpretation: Model's explanatory power
-       - Scale-independent, useful for comparing across different targets
-       - Higher is better
+    4. R² (R-squared, Coefficiente di Determinazione):
+       - Proporzione di varianza nel target spiegata dalle previsioni
+       - Range: (-∞, 1], previsione perfetta = 1
+       - Interpretazione: Potere esplicativo del modello
+       - Indipendente dalla scala, utile per confrontare target diversi
+       - Più alto è meglio
     
     5. MAPE (Mean Absolute Percentage Error):
-       - Average absolute percentage error
-       - Units: Percentage (%)
-       - Interpretation: Relative forecasting error
-       - Scale-independent, easy to communicate to stakeholders
-       - Problematic when true values are near zero
-       - Lower is better
+       - Errore percentuale assoluto medio
+       - Unità: Percentuale (%)
+       - Interpretazione: Errore di previsione relativo
+       - Indipendente dalla scala, facile da comunicare agli stakeholder
+       - Problematico quando valori veri sono vicini a zero
+       - Più basso è meglio
     
-    For CityLearn energy forecasting:
-    - RMSE is often the primary metric (matches energy units)
-    - MAPE provides intuitive percentage-based interpretation
-    - R² indicates how well the model captures energy patterns
-    - MAE gives robust error estimate less affected by extreme values
+    Per previsioni energetiche CityLearn:
+    - RMSE è spesso la metrica primaria (corrisponde alle unità energetiche)
+    - MAPE fornisce interpretazione intuitiva basata su percentuali
+    - R² indica quanto bene il modello cattura i pattern energetici
+    - MAE dà stima robusta dell'errore meno influenzata da valori estremi
     
     Args:
-        y_true: True values (ground truth energy measurements)
-        y_pred: Predicted values (model forecasts)
+        y_true: Valori reali (misurazioni energetiche di ground truth)
+        y_pred: Valori predetti (previsioni del modello)
         
     Returns:
-        Dictionary containing all calculated metrics:
+        Dizionario contenente tutte le metriche calcolate:
         - mae: Mean Absolute Error
         - mse: Mean Squared Error  
         - rmse: Root Mean Squared Error
-        - r2: R-squared coefficient
+        - r2: Coefficiente R-squared
         - mape: Mean Absolute Percentage Error
         
     Example:
@@ -428,38 +494,288 @@ def calculate_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, float
         >>> metrics = calculate_metrics(y_true, y_pred)
         >>> print(f"RMSE: {metrics['rmse']:.2f} kWh")
     """
-    # Import already handled at module level
+    # Import già gestito a livello di modulo
     
-    # Flatten arrays if multidimensional (e.g., multi-step forecasts)
-    # This ensures metrics are calculated across all predictions
+    # Appiattisce array se multidimensionali (es. previsioni multi-step)
+    # Questo assicura che le metriche siano calcolate su tutte le previsioni
     y_true_flat = y_true.flatten()
     y_pred_flat = y_pred.flatten()
     
-    # Calculate comprehensive metrics for energy forecasting evaluation
+    # Calcola metriche complete per valutazione previsioni energetiche
     metrics = {
-        # Mean Absolute Error: Average magnitude of errors
-        # Robust to outliers, same units as target variable
+        # Mean Absolute Error: Magnitudine media degli errori
+        # Robusto agli outlier, stesse unità della variabile target
         'mae': mean_absolute_error(y_true_flat, y_pred_flat),
         
-        # Mean Squared Error: Average squared errors
-        # Emphasizes larger errors, used in loss functions
+        # Mean Squared Error: Errori quadrati medi
+        # Enfatizza errori maggiori, usato nelle funzioni di loss
         'mse': mean_squared_error(y_true_flat, y_pred_flat),
         
-        # Root Mean Squared Error: Standard deviation of errors
-        # Most commonly reported metric in energy forecasting
+        # Root Mean Squared Error: Deviazione standard degli errori
+        # Metrica più comunemente riportata nelle previsioni energetiche
         'rmse': np.sqrt(mean_squared_error(y_true_flat, y_pred_flat)),
         
-        # R-squared: Proportion of variance explained
-        # Indicates model's explanatory power (higher is better)
+        # R-squared: Proporzione di varianza spiegata
+        # Indica potere esplicativo del modello (più alto è meglio)
         'r2': r2_score(y_true_flat, y_pred_flat),
         
-        # Mean Absolute Percentage Error: Relative error metric
-        # Small epsilon (1e-8) prevents division by zero for zero true values
-        # Multiplied by 100 to express as percentage
+        # Mean Absolute Percentage Error: Metrica di errore relativo
+        # Piccolo epsilon (1e-8) previene divisione per zero per valori veri zero
+        # Moltiplicato per 100 per esprimere come percentuale
         'mape': np.mean(np.abs((y_true_flat - y_pred_flat) / (y_true_flat + 1e-8))) * 100
     }
     
     return metrics
+
+
+def statistical_significance_test(y_true: np.ndarray, pred1: np.ndarray, pred2: np.ndarray, 
+                                 model1_name: str = "Model1", model2_name: str = "Model2") -> Dict[str, float]:
+    """
+    Perform statistical significance test between two models.
+    
+    Uses Diebold-Mariano test to compare forecasting accuracy between two models.
+    Tests if the difference in forecasting performance is statistically significant.
+    
+    Args:
+        y_true: True values
+        pred1: Predictions from model 1
+        pred2: Predictions from model 2
+        model1_name: Name of first model
+        model2_name: Name of second model
+        
+    Returns:
+        Dictionary with test statistics:
+        - dm_statistic: Diebold-Mariano test statistic
+        - p_value: P-value of the test
+        - significant: Boolean indicating statistical significance (p < 0.05)
+        - better_model: Name of statistically better model (if significant)
+    """
+    from scipy import stats
+    
+    # Flatten arrays
+    y_true_flat = y_true.flatten()
+    pred1_flat = pred1.flatten()
+    pred2_flat = pred2.flatten()
+    
+    # Calculate loss differences (squared errors)
+    loss1 = (y_true_flat - pred1_flat) ** 2
+    loss2 = (y_true_flat - pred2_flat) ** 2
+    loss_diff = loss1 - loss2
+    
+    # Mean and standard deviation of loss differences
+    mean_diff = np.mean(loss_diff)
+    std_diff = np.std(loss_diff, ddof=1)
+    
+    # Diebold-Mariano test statistic
+    n = len(loss_diff)
+    dm_stat = mean_diff / (std_diff / np.sqrt(n))
+    
+    # P-value (two-tailed test)
+    p_value = 2 * (1 - stats.norm.cdf(abs(dm_stat)))
+    
+    # Determine if significant and which model is better
+    significant = p_value < 0.05
+    if significant:
+        better_model = model1_name if mean_diff < 0 else model2_name
+    else:
+        better_model = "No significant difference"
+    
+    return {
+        'dm_statistic': dm_stat,
+        'p_value': p_value,
+        'significant': significant,
+        'better_model': better_model,
+        'mean_loss_diff': mean_diff
+    }
+
+
+def perform_model_significance_analysis(results: Dict) -> Dict[str, Dict]:
+    """
+    Perform comprehensive statistical significance analysis between all model pairs.
+    
+    Args:
+        results: Dictionary of model results with predictions
+        
+    Returns:
+        Dictionary of significance test results between model pairs
+    """
+    significance_results = {}
+    
+    # Extract model names and their RMSE values for comparison
+    model_performance = {}
+    for target in results:
+        if target not in model_performance:
+            model_performance[target] = {}
+            
+        for model in results[target]:
+            rmse_values = []
+            for train_building in results[target][model]:
+                for test_building in results[target][model][train_building]:
+                    rmse = results[target][model][train_building][test_building].get('rmse', 999)
+                    if rmse != 999:
+                        rmse_values.append(rmse)
+            
+            if rmse_values:
+                model_performance[target][model] = {
+                    'mean_rmse': np.mean(rmse_values),
+                    'std_rmse': np.std(rmse_values),
+                    'n_tests': len(rmse_values)
+                }
+    
+    # Perform pairwise comparisons
+    for target in model_performance:
+        significance_results[target] = {}
+        models = list(model_performance[target].keys())
+        
+        for i, model1 in enumerate(models):
+            for j, model2 in enumerate(models[i+1:], i+1):
+                # Simple t-test between RMSE distributions (approximation)
+                # In practice, you'd need access to actual predictions for DM test
+                perf1 = model_performance[target][model1]
+                perf2 = model_performance[target][model2]
+                
+                # Simplified significance test based on mean differences
+                mean_diff = perf1['mean_rmse'] - perf2['mean_rmse'] 
+                pooled_std = np.sqrt((perf1['std_rmse']**2 + perf2['std_rmse']**2) / 2)
+                
+                if pooled_std > 0:
+                    t_stat = abs(mean_diff) / (pooled_std / np.sqrt(min(perf1['n_tests'], perf2['n_tests'])))
+                    p_value = 2 * (1 - stats.norm.cdf(t_stat))
+                else:
+                    p_value = 1.0
+                
+                pair_key = f"{model1}_vs_{model2}"
+                significance_results[target][pair_key] = {
+                    'mean_rmse_diff': mean_diff,
+                    'p_value': p_value,
+                    'significant': p_value < 0.05,
+                    'better_model': model1 if mean_diff < 0 else model2
+                }
+    
+    return significance_results
+
+
+def analyze_feature_importance(models_dict: Dict, feature_names: List[str]) -> Dict[str, Dict]:
+    """
+    Analyze feature importance across different model types.
+    
+    Extracts feature importance from tree-based models and weights from linear models.
+    For neural networks, uses permutation importance as approximation.
+    
+    Args:
+        models_dict: Dictionary of trained models
+        feature_names: List of feature names
+        
+    Returns:
+        Dictionary with feature importance for each model
+    """
+    importance_results = {}
+    
+    for model_name, model in models_dict.items():
+        if hasattr(model, 'model') and model.model is not None:
+            actual_model = model.model
+            
+            if hasattr(actual_model, 'feature_importances_'):
+                # Tree-based models (Random Forest, etc.)
+                importance_results[model_name] = {
+                    'type': 'tree_based',
+                    'importances': dict(zip(feature_names, actual_model.feature_importances_)),
+                    'top_features': sorted(zip(feature_names, actual_model.feature_importances_), 
+                                         key=lambda x: x[1], reverse=True)[:10]
+                }
+                
+            elif hasattr(actual_model, 'coef_'):
+                # Linear models
+                coef_abs = np.abs(actual_model.coef_) if len(actual_model.coef_.shape) == 1 else np.abs(actual_model.coef_[0])
+                importance_results[model_name] = {
+                    'type': 'linear',
+                    'importances': dict(zip(feature_names, coef_abs)),
+                    'top_features': sorted(zip(feature_names, coef_abs), 
+                                         key=lambda x: x[1], reverse=True)[:10]
+                }
+                
+            elif 'ann' in model_name.lower() or 'mlp' in model_name.lower():
+                # Neural network - simplified importance (first layer weights)
+                if hasattr(actual_model, 'coefs_') and len(actual_model.coefs_) > 0:
+                    first_layer_weights = np.abs(actual_model.coefs_[0]).mean(axis=1)
+                    importance_results[model_name] = {
+                        'type': 'neural',
+                        'importances': dict(zip(feature_names, first_layer_weights)),
+                        'top_features': sorted(zip(feature_names, first_layer_weights), 
+                                             key=lambda x: x[1], reverse=True)[:10]
+                    }
+                    
+            elif 'ensemble' in model_name.lower():
+                # Ensemble methods - aggregate from base models
+                if hasattr(model, 'base_models') and model.base_models:
+                    ensemble_importance = np.zeros(len(feature_names))
+                    valid_models = 0
+                    
+                    for base_model in model.base_models.values():
+                        if hasattr(base_model, 'feature_importances_'):
+                            ensemble_importance += base_model.feature_importances_
+                            valid_models += 1
+                        elif hasattr(base_model, 'coef_'):
+                            coef_abs = np.abs(base_model.coef_) if len(base_model.coef_.shape) == 1 else np.abs(base_model.coef_[0])
+                            # Normalize coefficients to [0,1] range like importances
+                            coef_normalized = coef_abs / (coef_abs.sum() + 1e-8)
+                            ensemble_importance += coef_normalized
+                            valid_models += 1
+                    
+                    if valid_models > 0:
+                        ensemble_importance /= valid_models
+                        importance_results[model_name] = {
+                            'type': 'ensemble',
+                            'importances': dict(zip(feature_names, ensemble_importance)),
+                            'top_features': sorted(zip(feature_names, ensemble_importance), 
+                                                 key=lambda x: x[1], reverse=True)[:10]
+                        }
+    
+    return importance_results
+
+
+def create_feature_importance_summary(importance_results: Dict[str, Dict]) -> pd.DataFrame:
+    """
+    Create a comprehensive feature importance summary across all models.
+    
+    Args:
+        importance_results: Feature importance results from analyze_feature_importance
+        
+    Returns:
+        DataFrame with feature importance rankings across models
+    """
+    # Collect all features
+    all_features = set()
+    for model_data in importance_results.values():
+        all_features.update(model_data['importances'].keys())
+    
+    all_features = sorted(list(all_features))
+    
+    # Create summary DataFrame
+    summary_data = []
+    
+    for feature in all_features:
+        row = {'Feature': feature}
+        importances = []
+        
+        for model_name, model_data in importance_results.items():
+            importance = model_data['importances'].get(feature, 0)
+            row[f'{model_name}_importance'] = importance
+            importances.append(importance)
+        
+        # Calculate summary statistics
+        row['Mean_Importance'] = np.mean(importances)
+        row['Std_Importance'] = np.std(importances)
+        row['Max_Importance'] = np.max(importances)
+        row['Rank_Consistency'] = len([x for x in importances if x > np.mean(importances)])
+        
+        summary_data.append(row)
+    
+    # Create DataFrame and sort by mean importance
+    summary_df = pd.DataFrame(summary_data)
+    summary_df = summary_df.sort_values('Mean_Importance', ascending=False)
+    
+    return summary_df
 
 
 def cross_building_split(building_data: Dict[str, pd.DataFrame],
@@ -880,21 +1196,11 @@ def create_thesis_visualizations(results):
     
     # Grafico 1: Performance algoritmi
     algorithms = ['LSTM', 'ANN', 'Random_Forest', 'Gaussian_Process']
-    cooling_rmse = []
     solar_rmse = []
+    carbon_rmse = []
     
     for algorithm in algorithms:
-        # RMSE cooling
-        cooling_values = []
-        if 'cooling_demand' in results and algorithm in results['cooling_demand']:
-            for train_building in results['cooling_demand'][algorithm]:
-                for test_building in results['cooling_demand'][algorithm][train_building]:
-                    rmse = results['cooling_demand'][algorithm][train_building][test_building].get('rmse', 999)
-                    if rmse != 999:
-                        cooling_values.append(rmse)
-        cooling_rmse.append(np.mean(cooling_values) if cooling_values else np.nan)
-        
-        # RMSE solar
+        # RMSE solar generation
         solar_values = []
         if 'solar_generation' in results and algorithm in results['solar_generation']:
             for train_building in results['solar_generation'][algorithm]:
@@ -903,21 +1209,31 @@ def create_thesis_visualizations(results):
                     if rmse != 999:
                         solar_values.append(rmse)
         solar_rmse.append(np.mean(solar_values) if solar_values else np.nan)
+        
+        # RMSE carbon intensity
+        carbon_values = []
+        if 'carbon_intensity' in results and algorithm in results['carbon_intensity']:
+            if 'Carbon_Global' in results['carbon_intensity'][algorithm]:
+                if 'Carbon_Global' in results['carbon_intensity'][algorithm]['Carbon_Global']:
+                    rmse = results['carbon_intensity'][algorithm]['Carbon_Global']['Carbon_Global'].get('rmse', 999)
+                    if rmse != 999:
+                        carbon_values.append(rmse)
+        carbon_rmse.append(np.mean(carbon_values) if carbon_values else np.nan)
     
     # Plot
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
     
     colors = ['#2E86AB', '#F18F01', '#A23B72', '#C73E1D']
     
-    # Cooling
-    bars1 = ax1.bar(algorithms, cooling_rmse, color=colors, alpha=0.8)
-    ax1.set_title('Performance Algoritmi - Cooling Demand', fontsize=14, fontweight='bold')
+    # Solar Generation  
+    bars1 = ax1.bar(algorithms, solar_rmse, color=colors, alpha=0.8)
+    ax1.set_title('Performance Algoritmi - Solar Generation', fontsize=14, fontweight='bold')
     ax1.set_ylabel('RMSE')
     ax1.tick_params(axis='x', rotation=45)
     
-    # Solar
-    bars2 = ax2.bar(algorithms, solar_rmse, color=colors, alpha=0.8)
-    ax2.set_title('Performance Algoritmi - Solar Generation', fontsize=14, fontweight='bold') 
+    # Carbon Intensity
+    bars2 = ax2.bar(algorithms, carbon_rmse, color=colors, alpha=0.8)
+    ax2.set_title('Performance Algoritmi - Carbon Intensity', fontsize=14, fontweight='bold') 
     ax2.set_ylabel('RMSE')
     ax2.tick_params(axis='x', rotation=45)
     
@@ -1071,22 +1387,57 @@ def create_building_performance_analysis(results):
     
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(16, 12))
     
-    # Building performance comparison
+    # EXTRACT REAL PERFORMANCE DATA FROM RESULTS
     buildings = ['Building_1', 'Building_2', 'Building_3']
-    cooling_perf = [0.28, 0.35, 0.31]
-    solar_perf = [1.2, 1.5, 1.1]
+    
+    # Real solar generation performance per building
+    solar_perf = []
+    for building in buildings:
+        building_rmse = []
+        if 'solar_generation' in results:
+            for algorithm in results['solar_generation']:
+                for train_building in results['solar_generation'][algorithm]:
+                    for test_building in results['solar_generation'][algorithm][train_building]:
+                        if test_building == building:
+                            rmse = results['solar_generation'][algorithm][train_building][test_building].get('rmse', 999)
+                            if rmse != 999:
+                                building_rmse.append(rmse)
+        solar_perf.append(np.mean(building_rmse) if building_rmse else np.nan)
+    
+    # Real carbon intensity performance (global)
+    carbon_rmse = []
+    if 'carbon_intensity' in results:
+        for algorithm in results['carbon_intensity']:
+            if 'Carbon_Global' in results['carbon_intensity'][algorithm]:
+                if 'Carbon_Global' in results['carbon_intensity'][algorithm]['Carbon_Global']:
+                    rmse = results['carbon_intensity'][algorithm]['Carbon_Global']['Carbon_Global'].get('rmse', 999)
+                    if rmse != 999:
+                        carbon_rmse.append(rmse)
+    
+    carbon_avg = np.mean(carbon_rmse) if carbon_rmse else np.nan
     
     colors = ['#FF9999', '#66B2FF', '#99FF99']
     
-    bars1 = ax1.bar(buildings, cooling_perf, color=colors, alpha=0.8)
-    ax1.set_title('Cooling Demand Forecasting by Building', fontweight='bold')
+    # Solar generation by building (real data)
+    bars1 = ax1.bar(buildings, solar_perf, color=colors, alpha=0.8)
+    ax1.set_title('Solar Generation RMSE by Building (Real Results)', fontweight='bold')
     ax1.set_ylabel('RMSE')
-    ax1.set_ylim(0, 0.5)
     
-    bars2 = ax2.bar(buildings, solar_perf, color=colors, alpha=0.8)
-    ax2.set_title('Solar Generation Forecasting by Building', fontweight='bold')
-    ax2.set_ylabel('RMSE')
-    ax2.set_ylim(0, 2.0)
+    # Carbon intensity global performance (real data)
+    if not np.isnan(carbon_avg):
+        bars2 = ax2.bar(['Global Carbon Intensity'], [carbon_avg], color=['#FFB366'], alpha=0.8)
+        ax2.set_title('Carbon Intensity RMSE (Global - Real Results)', fontweight='bold')
+        ax2.set_ylabel('RMSE')
+        ax2.set_ylim(0, max(0.1, carbon_avg * 1.2))
+        
+        # Add value label on bar
+        ax2.text(0, carbon_avg + carbon_avg * 0.05, f'{carbon_avg:.4f}', 
+                ha='center', va='bottom', fontweight='bold')
+    else:
+        ax2.text(0.5, 0.5, 'No Carbon Intensity\nResults Available', 
+                ha='center', va='center', transform=ax2.transAxes, 
+                fontsize=14, fontweight='bold')
+        ax2.set_title('Carbon Intensity Results', fontweight='bold')
     
     # Time series forecast example
     hours = np.arange(0, 24)

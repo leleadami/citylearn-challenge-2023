@@ -1,12 +1,12 @@
 """
-Reinforcement Learning Evaluation for CityLearn Challenge 2023
-Q-Learning and SAC agents with centralized/decentralized approaches
+Valutazione di Reinforcement Learning per CityLearn Challenge 2023
+Agenti Q-Learning e SAC con approcci centralizzati/decentralizzati
 
-This script evaluates RL agents on building energy management:
-1. Q-Learning (centralized and decentralized)
-2. SAC (centralized and decentralized)  
-3. Performance comparison with forecasting models
-4. Training curves and convergence analysis
+Questo script valuta gli agenti RL per la gestione energetica degli edifici:
+1. Q-Learning (centralizzato e decentralizzato)
+2. SAC (centralizzato e decentralizzato)
+3. Confronto delle prestazioni con modelli di previsione
+4. Curve di addestramento e analisi di convergenza
 """
 
 import numpy as np
@@ -25,37 +25,37 @@ from src.rl.reward_functions import create_reward_function, BaseRewardFunction
 
 class MockCityLearnEnv:
     """
-    Mock CityLearn environment for RL testing.
+    Ambiente CityLearn simulato per test RL.
     
-    Simulates building energy management environment with:
-    - Multi-building observations
-    - Continuous/discrete action spaces
-    - Energy cost rewards
+    Simula un ambiente di gestione energetica degli edifici con:
+    - Osservazioni multi-edificio
+    - Spazi di azione continui/discreti
+    - Ricompense basate sui costi energetici
     """
     
     def __init__(self, building_count: int = 3, obs_dim: int = 28, reward_type: str = 'balanced'):
         """
-        Initialize mock environment.
+        Inizializza l'ambiente simulato.
         
         Args:
-            building_count: Number of buildings
-            obs_dim: Observation dimension per building
-            reward_type: Type of reward function to use
+            building_count: Numero di edifici
+            obs_dim: Dimensione delle osservazioni per edificio
+            reward_type: Tipo di funzione di ricompensa da utilizzare
         """
         self.building_count = building_count
         self.obs_dim = obs_dim
         self.current_step = 0
         self.max_steps = 1000
         
-        # Load actual building data for realistic simulation
+        # Carica dati reali degli edifici per simulazione realistica
         self.building_data = self._load_building_data()
         
-        # Initialize reward function
+        # Inizializza funzione di ricompensa
         self.reward_function = create_reward_function(reward_type)
         print(f"Using reward function: {self.reward_function.name}")
         
     def _load_building_data(self) -> Dict[str, pd.DataFrame]:
-        """Load building data for realistic rewards."""
+        """Carica dati degli edifici per ricompense realistiche."""
         buildings = {}
         phases = [
             'citylearn_challenge_2023_phase_2_online_evaluation_1',
@@ -79,15 +79,15 @@ class MockCityLearnEnv:
         return buildings
     
     def reset(self):
-        """Reset environment to initial state."""
+        """Resetta l'ambiente allo stato iniziale."""
         self.current_step = 0
         
-        # Generate initial observations
+        # Genera osservazioni iniziali
         observations = []
         for i in range(self.building_count):
             building_name = f'Building_{i+1}'
             if building_name in self.building_data:
-                # Use actual building features
+                # Utilizza caratteristiche reali degli edifici
                 data = self.building_data[building_name]
                 row = data.iloc[self.current_step % len(data)]
                 obs = np.array([
@@ -99,13 +99,13 @@ class MockCityLearnEnv:
                     row['occupant_count'] / 5.0
                 ])
                 
-                # Pad to obs_dim
+                # Completa fino a obs_dim
                 if len(obs) < self.obs_dim:
                     obs = np.pad(obs, (0, self.obs_dim - len(obs)))
                 else:
                     obs = obs[:self.obs_dim]
             else:
-                # Random observations as fallback
+                # Osservazioni casuali come fallback
                 obs = np.random.uniform(-1, 1, self.obs_dim)
             
             observations.append(obs)
@@ -114,17 +114,17 @@ class MockCityLearnEnv:
     
     def step(self, actions: List[float]):
         """
-        Take environment step.
+        Esegue un passo nell'ambiente.
         
         Args:
-            actions: Actions for each building
+            actions: Azioni per ciascun edificio
             
         Returns:
             next_observations, rewards, done, info
         """
         self.current_step += 1
         
-        # Generate next observations
+        # Genera prossime osservazioni
         next_observations = []
         rewards = []
         
@@ -132,11 +132,11 @@ class MockCityLearnEnv:
             building_name = f'Building_{i+1}'
             
             if building_name in self.building_data:
-                # Use actual building data for rewards
+                # Utilizza dati reali degli edifici per ricompense
                 data = self.building_data[building_name]
                 row = data.iloc[self.current_step % len(data)]
                 
-                # Create state dictionaries for reward function
+                # Crea dizionari di stato per la funzione di ricompensa
                 state = {
                     'hour': row['hour'],
                     'indoor_dry_bulb_temperature': row['indoor_dry_bulb_temperature'],
@@ -153,11 +153,11 @@ class MockCityLearnEnv:
                     'hour': row['hour']
                 }
                 
-                # Calculate reward using modular reward function
+                # Calcola ricompensa utilizzando funzione modulare
                 reward = self.reward_function.calculate_reward(state, action, next_state)
                 rewards.append(reward)
                 
-                # Next observation
+                # Prossima osservazione
                 obs = np.array([
                     row['hour'] / 24.0,
                     row['indoor_dry_bulb_temperature'] / 50.0,
@@ -174,7 +174,7 @@ class MockCityLearnEnv:
                     
                 next_observations.append(obs)
             else:
-                # Fallback reward: random but positive-leaning
+                # Ricompensa di fallback: casuale ma tendente al positivo
                 rewards.append(np.random.uniform(0.3, 0.7))  # Slightly positive baseline
                 next_observations.append(np.random.uniform(-1, 1, self.obs_dim))
         
@@ -185,20 +185,20 @@ class MockCityLearnEnv:
 
 
 class RLEvaluator:
-    """Reinforcement Learning evaluation system."""
+    """Sistema di valutazione per Reinforcement Learning."""
     
     def __init__(self, reward_type: str = 'balanced'):
-        """Initialize RL evaluator.
+        """Inizializza il valutatore RL.
         
         Args:
-            reward_type: Type of reward function to use for all agents
+            reward_type: Tipo di funzione di ricompensa da usare per tutti gli agenti
         """
         self.results = {}
         self.reward_type = reward_type
         print(f"\nFunzione Ricompensa: {reward_type.upper()}")
         
     def evaluate_q_learning(self, episodes: int = 100):
-        """Evaluate Q-Learning agents."""
+        """Valuta gli agenti Q-Learning."""
         print("\n" + "="*60)
         print("Q-LEARNING EVALUATION")
         print("="*60)
@@ -206,7 +206,7 @@ class RLEvaluator:
         env = MockCityLearnEnv(reward_type=self.reward_type)
         results = {}
         
-        # Centralized Q-Learning
+        # Q-Learning Centralizzato
         print("\n[CENTRALIZED] Q-Learning Training...")
         centralized_ql = CentralizedQLearning(
             building_count=3,
@@ -228,7 +228,7 @@ class RLEvaluator:
             'q_table_size': len(centralized_ql.agent.q_table)
         }
         
-        # Decentralized Q-Learning
+        # Q-Learning Decentralizzato
         print("\n[DECENTRALIZED] Q-Learning Training...")
         decentralized_ql = DecentralizedQLearning(
             building_count=3,
@@ -253,7 +253,7 @@ class RLEvaluator:
         return results
     
     def evaluate_sac(self, episodes: int = 50):
-        """Evaluate SAC agents."""
+        """Valuta gli agenti SAC."""
         print("\n" + "="*60)
         print("SAC EVALUATION")
         print("="*60)
@@ -261,7 +261,7 @@ class RLEvaluator:
         env = MockCityLearnEnv(reward_type=self.reward_type)
         results = {}
         
-        # Centralized SAC
+        # SAC Centralizzato
         print("\n[CENTRALIZED] SAC Training...")
         centralized_sac = CentralizedSAC(
             building_count=3,
@@ -283,7 +283,7 @@ class RLEvaluator:
             'critic_losses': centralized_sac.training_history['critic_losses'][-100:]
         }
         
-        # Decentralized SAC
+        # SAC Decentralizzato
         print("\n[DECENTRALIZED] SAC Training...")
         decentralized_sac = DecentralizedSAC(
             building_count=3,
@@ -307,16 +307,16 @@ class RLEvaluator:
         return results
     
     def create_rl_visualizations(self):
-        """RL visualizations not implemented."""
+        """Visualizzazioni RL non implementate."""
         print("\n[RL] Visualizzazioni non implementate - saltate")
         print("     (Solo tabella richiesta - riga 19 prompt.txt)")
     
     def save_results(self):
-        """Save RL evaluation results to JSON file."""
+        """Salva i risultati della valutazione RL in file JSON."""
         print("\nSalvataggio risultati RL...")
         os.makedirs('results/rl_experiments', exist_ok=True)
         
-        # Save main results
+        # Salva risultati principali
         results_path = 'results/rl_experiments/rl_results.json'
         with open(results_path, 'w') as f:
             import json
@@ -326,10 +326,10 @@ class RLEvaluator:
 
 
 def main(reward_type: str = 'balanced'):
-    """Main RL evaluation function.
+    """Funzione principale di valutazione RL.
     
     Args:
-        reward_type: Type of reward function to use ('balanced', 'efficiency', 
+        reward_type: Tipo di funzione di ricompensa ('balanced', 'efficiency', 
                     'comfort', 'cost', 'sustainability', 'multi_objective')
     """
     print("\n" + "="*80)
@@ -339,16 +339,16 @@ def main(reward_type: str = 'balanced'):
     
     evaluator = RLEvaluator(reward_type=reward_type)  # change reward function here
     
-    # Evaluate Q-Learning
+    # Valuta Q-Learning
     evaluator.evaluate_q_learning(episodes=80)
     
-    # Evaluate SAC  
+    # Valuta SAC  
     evaluator.evaluate_sac(episodes=40)
     
-    # Create visualizations
+    # Crea visualizzazioni
     evaluator.create_rl_visualizations()
     
-    # Save results
+    # Salva risultati
     evaluator.save_results()
     
     print("\n" + "="*80)
@@ -360,7 +360,7 @@ def main(reward_type: str = 'balanced'):
 
 
 def compare_reward_functions():
-    """Compare different reward functions with shorter episodes."""
+    """Confronta diverse funzioni di ricompensa con episodi più brevi."""
     print("\n" + "="*80)
     print("REWARD FUNCTION COMPARISON")
     print("="*80)
@@ -373,11 +373,11 @@ def compare_reward_functions():
         
         evaluator = RLEvaluator(reward_type=reward_type)
         
-        # Run shorter evaluations for comparison
+        # Esegue valutazioni più brevi per confronto
         evaluator.evaluate_q_learning(episodes=30)
         evaluator.evaluate_sac(episodes=20)
         
-        # Store results for comparison
+        # Memorizza risultati per confronto
         comparison_results[reward_type] = evaluator.results
     
     print(f"\n{'='*80}")

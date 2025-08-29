@@ -89,14 +89,14 @@ class TransformerForecaster(BaseForecaster):
         
         model = Model(inputs, outputs)
         model.compile(
-            optimizer=Adam(learning_rate=self.learning_rate),
+            optimizer=Adam(learning_rate=self.learning_rate), # type: ignore
             loss='mse',
             metrics=['mae']
         )
         
         return model
     
-    def fit(self, X_train, y_train, X_val=None, y_val=None, epochs=50, batch_size=32, verbose=0):
+    def fit(self, X_train, y_train, X_val=None, y_val=None, epochs=35, batch_size=32, verbose=0):
         """Addestra Simple Transformer."""
         print(f"[TRANSFORMER] Inizio addestramento - {epochs} epoche")
         
@@ -109,9 +109,9 @@ class TransformerForecaster(BaseForecaster):
         # Callbacks
         callbacks = [
             EarlyStopping(monitor='val_loss' if X_val is not None else 'loss', 
-                         patience=10, restore_best_weights=True),
+                         patience=20, restore_best_weights=True),
             ReduceLROnPlateau(monitor='val_loss' if X_val is not None else 'loss', 
-                             factor=0.5, patience=5)
+                             factor=0.5, patience=8)
         ]
         
         # Addestramento
@@ -123,7 +123,7 @@ class TransformerForecaster(BaseForecaster):
             batch_size=batch_size,
             validation_data=validation_data,
             callbacks=callbacks,
-            verbose=verbose
+            verbose=str(verbose)
         )
         
         self.is_fitted = True
@@ -135,7 +135,7 @@ class TransformerForecaster(BaseForecaster):
         if not self.is_fitted or self.model is None:
             raise ValueError("Il modello deve essere addestrato prima della predizione")
         
-        predictions = self.model.predict(X, verbose=0)
+        predictions = self.model.predict(X, verbose='0')
         return predictions.flatten()
 
 
@@ -212,7 +212,7 @@ class TimesFMForecaster(BaseForecaster):
         
         model = Model(inputs, outputs)
         model.compile(
-            optimizer=Adam(learning_rate=self.learning_rate),
+            optimizer=Adam(learning_rate=self.learning_rate), # type: ignore
             loss='mse',
             metrics=['mae']
         )
@@ -232,9 +232,9 @@ class TimesFMForecaster(BaseForecaster):
         # Callbacks per foundation model training
         callbacks = [
             EarlyStopping(monitor='val_loss' if X_val is not None else 'loss', 
-                         patience=8, restore_best_weights=True),
+                         patience=15, restore_best_weights=True),
             ReduceLROnPlateau(monitor='val_loss' if X_val is not None else 'loss', 
-                             factor=0.3, patience=4)  # Più aggressivo per foundation model
+                             factor=0.3, patience=6)  # Più aggressivo per foundation model
         ]
         
         # Addestramento
@@ -246,7 +246,7 @@ class TimesFMForecaster(BaseForecaster):
             batch_size=batch_size,
             validation_data=validation_data,
             callbacks=callbacks,
-            verbose=verbose
+            verbose=str(verbose)
         )
         
         self.is_fitted = True
@@ -258,5 +258,5 @@ class TimesFMForecaster(BaseForecaster):
         if not self.is_fitted or self.model is None:
             raise ValueError("Il modello deve essere addestrato prima della predizione")
         
-        predictions = self.model.predict(X, verbose=0)
+        predictions = self.model.predict(X, verbose='0')
         return predictions.flatten()

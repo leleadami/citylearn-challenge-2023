@@ -1,0 +1,773 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TESI DI LAUREA - CITYLEARN CHALLENGE 2023
+% Energy Forecasting e Reinforcement Learning
+% Compatibile con Overleaf
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[12pt,a4paper,twoside]{report}
+
+% Pacchetti essenziali per Overleaf
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amsfonts,amssymb}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{tocloft}
+\usepackage{appendix}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{natbib}
+
+% Configurazione pagina
+\geometry{
+    top=2.5cm,
+    bottom=2.5cm,
+    left=3cm,
+    right=2.5cm,
+    headheight=14pt
+}
+
+% Configurazione hyperref per Overleaf
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    citecolor=red,
+    pdftitle={Energy Forecasting e Reinforcement Learning per Smart Buildings},
+    pdfauthor={Studente},
+    pdfsubject={Tesi di Laurea - CityLearn Challenge 2023},
+    pdfkeywords={Energy Forecasting, Machine Learning, Deep Learning, Reinforcement Learning, Smart Buildings, LSTM, Transformer}
+}
+
+% Configurazione header e footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE,RO]{\thepage}
+\fancyhead[LO]{\nouppercase{\rightmark}}
+\fancyhead[RE]{\nouppercase{\leftmark}}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% Stile per il codice
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    numbers=left,
+    numberstyle=\tiny,
+    stepnumber=1,
+    numbersep=5pt,
+    backgroundcolor=\color{gray!10},
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    frame=single,
+    tabsize=2,
+    captionpos=b,
+    breaklines=true,
+    breakatwhitespace=false,
+    language=Python,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red}
+}
+
+% Definizioni di colori
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+% Configurazione per i titoli
+\titleformat{\chapter}[display]
+{\normalfont\huge\bfseries}{\chaptertitlename\ \thechapter}{20pt}{\Huge}
+\titlespacing*{\chapter}{0pt}{-20pt}{40pt}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% INIZIO DOCUMENTO
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+% Pagina del titolo
+\begin{titlepage}
+\centering
+\includegraphics[width=0.3\textwidth]{images/logo_universita.png}\\[1cm]
+{\Large UNIVERSITÀ DEGLI STUDI DI [NOME UNIVERSITÀ]}\\[0.5cm]
+{\Large DIPARTIMENTO DI [NOME DIPARTIMENTO]}\\[0.5cm]
+{\Large CORSO DI LAUREA IN [NOME CORSO]}\\[2cm]
+
+{\huge\bfseries Energy Forecasting e Reinforcement Learning per Smart Buildings}\\[0.5cm]
+{\Large\bfseries Implementazione Avanzata del CityLearn Challenge 2023}\\[3cm]
+
+\begin{minipage}{0.4\textwidth}
+\begin{flushleft} \large
+\emph{Relatore:}\\
+Prof. [Nome Relatore]
+\end{flushleft}
+\end{minipage}%
+\begin{minipage}{0.4\textwidth}
+\begin{flushright} \large
+\emph{Candidato:} \\
+[Nome Studente]\\
+Matricola: [Numero Matricola]
+\end{flushright}
+\end{minipage}\\[3cm]
+
+{\large ANNO ACCADEMICO 2023/2024}
+
+\end{titlepage}
+
+% Rimuove numerazione per le pagine preliminari
+\pagenumbering{roman}
+
+% Dedica (opzionale)
+\newpage
+\thispagestyle{empty}
+\vspace*{\stretch{1}}
+\begin{center}
+\emph{Ai miei genitori e a tutti coloro che credono nell'innovazione sostenibile}
+\end{center}
+\vspace*{\stretch{2}}
+
+% Ringraziamenti
+\chapter*{Ringraziamenti}
+\addcontentsline{toc}{chapter}{Ringraziamenti}
+
+Desidero ringraziare innanzitutto il Prof. [Nome Relatore] per la guida e il supporto forniti durante tutto il percorso di ricerca. Un ringraziamento particolare va ai colleghi del laboratorio per le discussioni costruttive e il confronto tecnico.
+
+Ringrazio inoltre la comunità open source e i creatori del CityLearn Challenge per aver fornito un framework eccellente per la ricerca nell'ambito dell'energia sostenibile e dell'intelligenza artificiale.
+
+% Abstract
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+
+Questa tesi presenta un'implementazione avanzata di sistemi di forecasting energetico e reinforcement learning per smart buildings, basata sul CityLearn Challenge 2023. Il lavoro si concentra sullo sviluppo di modelli predittivi all'avanguardia per la generazione solare e l'intensità carbonica, utilizzando architetture deep learning innovative come LSTM, Transformer e TimesFM.
+
+L'approccio sperimentale include una valutazione cross-building per testare la capacità di generalizzazione dei modelli, tecniche di ensemble avanzate per migliorare l'accuratezza predittiva, e sistemi di reinforcement learning per l'ottimizzazione dinamica del controllo energetico.
+
+I risultati mostrano che i modelli LSTM raggiungono un RMSE di 50.85±11.11 per la solar generation con R² = 0.9498, dimostrando eccellenti capacità predittive. I sistemi di ensemble stacking ottengono le migliori performance complessive con RMSE = 25.07±0.41. L'implementazione include inoltre analisi di interpretabilità tramite SHAP values e tecniche di uncertainty quantification.
+
+\textbf{Keywords:} Energy Forecasting, Machine Learning, Deep Learning, LSTM, Transformer, Reinforcement Learning, Smart Buildings, CityLearn, Sustainable Energy
+
+% Indice
+\tableofcontents
+\listoffigures
+\listoftables
+
+% Inizio numerazione araba
+\newpage
+\pagenumbering{arabic}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CAPITOLI
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% ========================================
+% CAPITOLO 1 - INTRODUZIONE
+% ========================================
+
+\chapter{Introduzione}
+
+\section{Contesto e Motivazioni}
+
+L'ottimizzazione energetica degli edifici rappresenta una delle sfide più critiche del XXI secolo. Con il 40\% del consumo energetico globale attribuibile al settore edilizio \cite{iea2019}, lo sviluppo di sistemi intelligenti per la gestione dell'energia è diventato fondamentale per raggiungere gli obiettivi di sostenibilità ambientale.
+
+Il CityLearn Challenge 2023 fornisce un framework di simulazione realistico per testare algoritmi avanzati di forecasting energetico e reinforcement learning nel contesto di smart buildings. Questo ambiente simula edifici reali con sistemi di generazione solare, storage di energia, e controlli HVAC dinamici.
+
+\section{Obiettivi della Tesi}
+
+Gli obiettivi principali di questo lavoro sono:
+
+\begin{itemize}
+    \item \textbf{Sviluppo di modelli predittivi avanzati}: Implementazione di architetture deep learning all'avanguardia (LSTM, Transformer, TimesFM) per il forecasting di generazione solare e intensità carbonica
+    
+    \item \textbf{Valutazione cross-building}: Analisi della capacità di generalizzazione dei modelli tra edifici con caratteristiche diverse
+    
+    \item \textbf{Tecniche di ensemble}: Sviluppo di sistemi voting e stacking per migliorare l'accuratezza predittiva
+    
+    \item \textbf{Reinforcement Learning}: Implementazione di agenti SAC e Q-Learning per l'ottimizzazione del controllo energetico
+    
+    \item \textbf{Interpretabilità e incertezza}: Analisi SHAP e quantificazione dell'incertezza predittiva
+    
+    \item \textbf{Valutazione completa}: Confronto sistematico delle performance con metriche standardizzate
+\end{itemize}
+
+\section{Contributi Originali}
+
+I principali contributi di questa tesi includono:
+
+\begin{enumerate}
+    \item \textbf{Architettura LSTM robusta}: Sviluppo di un sistema LSTM con meccanismi di fallback che garantisce stabilità numerica e performance eccellenti (RMSE = 50.85±11.11, R² = 0.9498)
+    
+    \item \textbf{Sistema di ensemble avanzato}: Implementazione di tecniche stacking che raggiungono le migliori performance (RMSE = 25.07±0.41)
+    
+    \item \textbf{Valutazione cross-building sistematica}: Analisi completa della capacità di generalizzazione tra 3 edifici diversi
+    
+    \item \textbf{Framework di visualizzazione avanzato}: Sistema di 6 grafici comprensivi per ogni esperimento che fornisce insights dettagliati
+    
+    \item \textbf{Pipeline di preprocessing robusto}: Sistema di feature engineering con lag features, rolling statistics e encoding ciclico
+\end{enumerate}
+
+\section{Struttura della Tesi}
+
+La tesi è organizzata nei seguenti capitoli:
+
+\begin{itemize}
+    \item \textbf{Capitolo 2}: Rassegna dello stato dell'arte nel forecasting energetico e reinforcement learning
+    \item \textbf{Capitolo 3}: Metodologia e approccio sperimentale
+    \item \textbf{Capitolo 4}: Dettagli implementativi e architetture dei modelli
+    \item \textbf{Capitolo 5}: Risultati sperimentali e analisi comparative
+    \item \textbf{Capitolo 6}: Conclusioni e sviluppi futuri
+\end{itemize}
+
+Il lavoro presenta un approccio sistematico e rigoroso per l'ottimizzazione energetica attraverso tecniche di machine learning avanzate, con particolare attenzione alla riproducibilità e alla valutazione quantitativa delle performance.
+
+% ========================================
+% CAPITOLO 2 - STATO DELL'ARTE
+% ========================================
+
+\chapter{Stato dell'Arte}
+
+\section{Energy Forecasting in Smart Buildings}
+
+Il forecasting energetico negli smart buildings è un campo di ricerca in rapida evoluzione che combina tecniche di machine learning, analisi delle serie temporali e sistemi di controllo avanzati.
+
+\subsection{Approcci Tradizionali}
+
+I metodi tradizionali per il forecasting energetico includono:
+
+\begin{itemize}
+    \item \textbf{Modelli ARIMA}: Modelli autoregressivi a media mobile integrati per serie temporali statazionarie
+    \item \textbf{Regressione lineare}: Approcci basati su relazioni lineari tra variabili meteorologiche e consumo energetico
+    \item \textbf{Metodi statistici}: Smoothing esponenziale e decomposizione stagionale
+\end{itemize}
+
+Questi approcci, pur essendo computazionalmente efficienti, presentano limitazioni nella cattura di pattern non lineari complessi tipici dei sistemi energetici.
+
+\subsection{Deep Learning per Energy Forecasting}
+
+L'introduzione delle reti neurali profonde ha rivoluzionato il campo:
+
+\subsubsection{Long Short-Term Memory (LSTM)}
+
+Le reti LSTM \cite{hochreiter1997lstm} sono particolarmente efficaci per il forecasting energetico grazie alla loro capacità di catturare dipendenze temporali a lungo termine. Studi recenti mostrano che gli LSTM possono raggiungere performance superiori rispetto ai metodi tradizionali nel forecasting del consumo elettrico \cite{kong2019lstm}.
+
+\textbf{Vantaggi degli LSTM:}
+\begin{itemize}
+    \item Gestione efficace di sequenze lunghe
+    \item Capacità di apprendere pattern stagionali complessi
+    \item Robustezza al rumore nei dati
+\end{itemize}
+
+\subsubsection{Transformer Networks}
+
+I modelli Transformer \cite{vaswani2017attention}, originariamente sviluppati per il Natural Language Processing, stanno trovando applicazione nel forecasting delle serie temporali energetiche. Il meccanismo di self-attention permette di catturare relazioni complesse tra diversi timestamp.
+
+\subsubsection{Modelli Ibridi e TimesFM}
+
+TimesFM (Time Series Foundation Model) rappresenta l'ultima frontiera nei modelli foundation per serie temporali \cite{das2024timesfm}. Questi modelli pre-addestrati su grandi dataset possono essere fine-tuned per applicazioni specifiche nel dominio energetico.
+
+\section{Reinforcement Learning per Controllo Energetico}
+
+\subsection{Formulazione del Problema}
+
+Il controllo energetico degli edifici può essere formulato come un problema di Markov Decision Process (MDP) dove:
+
+\begin{itemize}
+    \item \textbf{Stato (s)}: Include temperatura, generazione solare, prezzo dell'energia, occupancy
+    \item \textbf{Azione (a)}: Controllo HVAC, gestione storage, acquisto/vendita energia
+    \item \textbf{Reward (r)}: Funzione che bilancia comfort, costi energetici e sostenibilità
+\end{itemize}
+
+\subsection{Algoritmi RL per Energy Management}
+
+\subsubsection{Q-Learning}
+
+Il Q-Learning \cite{watkins1992q} è un algoritmo model-free che apprende la funzione valore-azione ottimale. Nel contesto energetico, è particolarmente utile per spazi di azione discreti come on/off dei dispositivi.
+
+\subsubsection{Soft Actor-Critic (SAC)}
+
+SAC \cite{haarnoja2018sac} è un algoritmo actor-critic off-policy particolarmente efficace per spazi di azione continui. È ideale per il controllo fine dei sistemi HVAC e la gestione dell'energia storage.
+
+\textbf{Vantaggi di SAC:}
+\begin{itemize}
+    \item Stabilità numerica elevata
+    \item Efficienza campionaria superiore
+    \item Gestione naturale dell'esplorazione tramite entropia
+\end{itemize}
+
+\section{CityLearn Challenge Framework}
+
+\subsection{Architettura della Simulazione}
+
+CityLearn \cite{vazquez2020citylearn} è un framework di simulazione che modella edifici reali con:
+
+\begin{itemize}
+    \item Modelli fisici termici dettagliati
+    \item Sistemi fotovoltaici e storage elettrico
+    \item Profili di occupancy realistici
+    \item Dati meteorologici reali
+\end{itemize}
+
+\subsection{Metriche di Valutazione}
+
+Il framework utilizza metriche standardizzate:
+
+\begin{itemize}
+    \item \textbf{RMSE}: Root Mean Square Error per accuratezza predittiva
+    \item \textbf{MAE}: Mean Absolute Error per robustezza agli outlier  
+    \item \textbf{R²}: Coefficiente di determinazione per qualità del fit
+    \item \textbf{MAPE}: Mean Absolute Percentage Error per interpretabilità
+\end{itemize}
+
+\section{Lacune nella Letteratura}
+
+Nonostante i progressi significativi, esistono ancora lacune importanti:
+
+\begin{enumerate}
+    \item \textbf{Generalizzazione cross-building}: Pochi studi analizzano sistematicamente la capacità di generalizzazione tra edifici diversi
+    
+    \item \textbf{Uncertainty quantification}: Limitata attenzione alla quantificazione dell'incertezza predittiva
+    
+    \item \textbf{Interpretabilità}: Mancanza di analisi sistematiche sull'interpretabilità dei modelli deep learning
+    
+    \item \textbf{Ensemble methods}: Applicazione limitata di tecniche ensemble avanzate nel dominio energetico
+\end{enumerate}
+
+Questa tesi mira a colmare queste lacune attraverso un approccio sistematico e rigoroso che combina le migliori tecniche disponibili in un framework unificato.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% BIBLIOGRAFIA E APPENDICI
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\bibliography{bibliografia}
+\bibliographystyle{unsrt}
+
+% ========================================
+% CAPITOLO 3 - METODOLOGIA
+% ========================================
+
+\chapter{Metodologia}
+
+\section{Approccio Sperimentale}
+
+La metodologia adottata in questa tesi segue un approccio sistematico e rigoroso per la valutazione di modelli di forecasting energetico e reinforcement learning. Il framework sperimentale è progettato per garantire riproducibilità, robustezza statistica e interpretabilità dei risultati.
+
+\subsection{Pipeline Sperimentale}
+
+La pipeline sperimentale è strutturata in quattro fasi principali:
+
+\begin{enumerate}
+    \item \textbf{Data Preprocessing}: Pulizia, normalizzazione e feature engineering
+    \item \textbf{Model Training}: Addestramento con validazione cross-building
+    \item \textbf{Evaluation}: Valutazione sistematica con metriche multiple
+    \item \textbf{Analysis}: Interpretabilità e uncertainty quantification
+\end{enumerate}
+
+\section{Dataset CityLearn 2023}
+
+\subsection{Caratteristiche del Dataset}
+
+Il dataset CityLearn Challenge 2023 include dati reali di 3 edifici commerciali con le seguenti caratteristiche:
+
+\begin{itemize}
+    \item \textbf{Durata temporale}: 122 giorni (2928 timestep orari)
+    \item \textbf{Risoluzione}: Dati orari con 16 features per edificio
+    \item \textbf{Targets}: Solar generation, carbon intensity, neighborhood solar
+    \item \textbf{Fasi}: 5 fasi di simulazione (phase\_1, phase\_2\_local, phase\_2\_online\_1/2/3)
+\end{itemize}
+
+\subsection{Feature Engineering}
+
+Il preprocessing include tecniche avanzate di feature engineering:
+
+\subsubsection{Lag Features}
+
+Creazione di feature ritardate per catturare dipendenze temporali:
+
+\begin{equation}
+X_t^{lag_k} = X_{t-k} \quad \text{per } k \in \{1, 3, 6, 12, 24\}
+\end{equation}
+
+\subsubsection{Rolling Statistics}
+
+Calcolo di statistiche mobili per catturare trend locali:
+
+\begin{align}
+X_t^{mean_w} &= \frac{1}{w} \sum_{i=t-w+1}^{t} X_i \\
+X_t^{std_w} &= \sqrt{\frac{1}{w} \sum_{i=t-w+1}^{t} (X_i - X_t^{mean_w})^2}
+\end{align}
+
+dove $w \in \{3, 6, 12\}$ rappresenta la finestra temporale.
+
+\subsubsection{Cyclical Encoding}
+
+Encoding ciclico per variabili temporali:
+
+\begin{align}
+hour_{sin} &= \sin\left(\frac{2\pi \cdot hour}{24}\right) \\
+hour_{cos} &= \cos\left(\frac{2\pi \cdot hour}{24}\right) \\
+month_{sin} &= \sin\left(\frac{2\pi \cdot month}{12}\right) \\
+month_{cos} &= \cos\left(\frac{2\pi \cdot month}{12}\right)
+\end{align}
+
+\section{Architetture dei Modelli}
+
+\subsection{Long Short-Term Memory (LSTM)}
+
+L'architettura LSTM implementata utilizza le seguenti specifiche:
+
+\begin{itemize}
+    \item \textbf{Sequence length}: 24 timestep (24 ore)
+    \item \textbf{Hidden units}: 16 (con fallback a 8)
+    \item \textbf{Layers}: 1 layer LSTM
+    \item \textbf{Dropout}: 0.0 (per stabilità numerica)
+    \item \textbf{Learning rate}: $1 \times 10^{-5}$ (con fallback a $1 \times 10^{-3}$)
+    \item \textbf{Activation}: Linear per output layer
+\end{itemize}
+
+\subsubsection{Meccanismo di Fallback}
+
+Per garantire robustezza numerica, è implementato un sistema di fallback a tre livelli:
+
+\begin{algorithm}
+\caption{LSTM Fallback Mechanism}
+\begin{algorithmic}[1]
+\STATE \textbf{Try} LSTM principale (16 units, lr=$1 \times 10^{-5}$)
+\IF{training fails or NaN values}
+    \STATE \textbf{Try} LSTM semplificato (8 units, lr=$1 \times 10^{-3}$)
+    \IF{training fails}
+        \STATE \textbf{Use} Linear Regression fallback
+    \ENDIF
+\ENDIF
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Transformer Network}
+
+L'architettura Transformer implementa:
+
+\begin{itemize}
+    \item \textbf{Multi-head attention}: 4 attention heads
+    \item \textbf{Model dimension}: 64
+    \item \textbf{Feed-forward dimension}: 256
+    \item \textbf{Layers}: 2 transformer layers
+    \item \textbf{Positional encoding}: Sinusoidale
+\end{itemize}
+
+\subsection{TimesFM (Time Series Foundation Model)}
+
+TimesFM utilizza un'architettura transformer specializzata:
+
+\begin{itemize}
+    \item \textbf{Embedding dimension}: 128
+    \item \textbf{GELU activation}: Per non-linearità avanzate
+    \item \textbf{Layer normalization}: Pre e post attention
+    \item \textbf{Residual connections}: Per stabilità del gradiente
+\end{itemize}
+
+\section{Tecniche di Ensemble}
+
+\subsection{Voting Ensemble}
+
+Il voting ensemble combina le predizioni di multiple modelli:
+
+\begin{equation}
+\hat{y}_{voting} = \frac{1}{n} \sum_{i=1}^{n} \hat{y}_i
+\end{equation}
+
+dove $\hat{y}_i$ rappresenta la predizione del modello $i$.
+
+\subsection{Stacking Ensemble}
+
+Lo stacking utilizza un meta-learner per combinare le predizioni:
+
+\begin{align}
+\mathbf{Z} &= [\hat{y}_1, \hat{y}_2, ..., \hat{y}_n] \\
+\hat{y}_{stacking} &= f_{meta}(\mathbf{Z})
+\end{align}
+
+dove $f_{meta}$ è tipicamente una regressione lineare.
+
+\section{Validazione Cross-Building}
+
+\subsection{Schema di Validazione}
+
+La valutazione cross-building utilizza uno schema Leave-One-Building-Out:
+
+\begin{itemize}
+    \item \textbf{Train}: 2 edifici (circa 1946 campioni)
+    \item \textbf{Test}: 1 edificio (circa 976 campioni)
+    \item \textbf{Folds}: 3 folds (Building\_1, Building\_2, Building\_3)
+\end{itemize}
+
+\subsection{Metriche di Valutazione}
+
+Le metriche utilizzate includono:
+
+\subsubsection{Root Mean Square Error (RMSE)}
+\begin{equation}
+RMSE = \sqrt{\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+\end{equation}
+
+\subsubsection{Coefficiente di Determinazione (R²)}
+\begin{equation}
+R^2 = 1 - \frac{SS_{res}}{SS_{tot}} = 1 - \frac{\sum_{i}(y_i - \hat{y}_i)^2}{\sum_{i}(y_i - \bar{y})^2}
+\end{equation}
+
+\subsubsection{Mean Absolute Error (MAE)}
+\begin{equation}
+MAE = \frac{1}{n} \sum_{i=1}^{n} |y_i - \hat{y}_i|
+\end{equation}
+
+\section{Reinforcement Learning}
+
+\subsection{Formulazione MDP}
+
+Il problema di controllo energetico è formulato come un MDP $(\mathcal{S}, \mathcal{A}, \mathcal{P}, \mathcal{R}, \gamma)$:
+
+\begin{itemize}
+    \item \textbf{State space} $\mathcal{S}$: $[T_{indoor}, T_{outdoor}, solar\_gen, electricity\_price, occupancy]$
+    \item \textbf{Action space} $\mathcal{A}$: Controlli HVAC e storage continui/discreti
+    \item \textbf{Reward} $\mathcal{R}$: $r = -(\alpha \cdot cost + \beta \cdot discomfort + \gamma \cdot emissions)$
+\end{itemize}
+
+\subsection{Soft Actor-Critic (SAC)}
+
+SAC massimizza sia il reward che l'entropia della policy:
+
+\begin{equation}
+\pi^* = \arg\max_{\pi} \mathbb{E}_{\tau \sim \pi} \left[ \sum_{t=0}^{T} r(s_t, a_t) + \alpha \mathcal{H}(\pi(\cdot|s_t)) \right]
+\end{equation}
+
+dove $\mathcal{H}(\pi)$ è l'entropia della policy e $\alpha$ controlla il trade-off exploration/exploitation.
+
+\section{Interpretabilità e Uncertainty Quantification}
+
+\subsection{SHAP Analysis}
+
+L'analisi SHAP (SHapley Additive exPlanations) quantifica il contributo di ciascuna feature:
+
+\begin{equation}
+\phi_i = \sum_{S \subseteq \mathcal{F} \setminus \{i\}} \frac{|S|!(|\mathcal{F}| - |S| - 1)!}{|\mathcal{F}|!} [f(S \cup \{i\}) - f(S)]
+\end{equation}
+
+\subsection{Conformal Prediction}
+
+La conformal prediction fornisce intervalli di predizione con garanzie di coverage:
+
+\begin{equation}
+\hat{C}(x) = \{\hat{y} : s(x, \hat{y}) \leq \hat{q}_{1-\alpha}\}
+\end{equation}
+
+dove $s(x, \hat{y})$ è una funzione di conformity e $\hat{q}_{1-\alpha}$ è il quantile empirico.
+
+\section{Implementazione e Riproducibilità}
+
+\subsection{Framework Software}
+
+L'implementazione utilizza:
+
+\begin{itemize}
+    \item \textbf{Python 3.10+}: Linguaggio principale
+    \item \textbf{TensorFlow/Keras}: Per modelli deep learning
+    \item \textbf{Scikit-learn}: Per modelli tradizionali e preprocessing
+    \item \textbf{Optuna}: Per ottimizzazione iperparametri
+    \item \textbf{SHAP}: Per interpretabilità
+\end{itemize}
+
+\subsection{Gestione della Randomness}
+
+Per garantire riproducibilità:
+
+\begin{lstlisting}[language=Python]
+import numpy as np
+import tensorflow as tf
+import random
+
+# Set seeds for reproducibility
+np.random.seed(42)
+tf.random.set_seed(42)
+random.seed(42)
+\end{lstlisting}
+
+La metodologia presentata garantisce un approccio sistematico e rigoroso per la valutazione comparativa dei modelli di forecasting energetico, con particolare attenzione alla robustezza statistica e all'interpretabilità dei risultati.
+
+% ========================================
+% CAPITOLO 4 - IMPLEMENTAZIONE
+% ========================================
+
+\chapter{Implementazione}
+
+\section{Architettura del Sistema}
+
+Il sistema implementato segue un'architettura modulare che separa chiaramente le responsabilità e garantisce estensibilità e manutenibilità del codice. L'architettura è organizzata in diversi moduli specializzati.
+
+\subsection{Struttura delle Directory}
+
+\begin{lstlisting}
+src/
+├── forecasting/          # Modelli di forecasting
+│   ├── base_models.py    # Classi base e interfacce
+│   ├── lstm_models.py    # Implementazioni LSTM
+│   ├── transformer_models.py  # Transformer e TimesFM
+│   └── neural_models.py  # Reti neurali feedforward
+├── rl/                   # Reinforcement Learning  
+│   ├── sac_agent.py     # Soft Actor-Critic
+│   └── q_learning_agent.py  # Q-Learning
+├── utils/               # Utilità e preprocessing
+│   ├── data_utils.py    # Gestione dati e metriche
+│   └── results_table.py # Tabelle risultati
+├── optimization/        # Ottimizzazione iperparametri
+│   └── hyperparameter_tuning.py
+├── interpretability/    # Analisi interpretabilità
+│   └── shap_analysis.py
+├── uncertainty/         # Quantificazione incertezza
+│   └── prediction_intervals.py
+├── validation/          # Validazione cross-temporale
+│   └── time_series_cv.py
+└── visualization/       # Sistema visualizzazioni
+    ├── performance_dashboard.py
+    └── advanced_charts.py
+\end{lstlisting}
+
+\section{Modelli di Forecasting}
+
+\subsection{Classe Base BaseForecaster}
+
+Tutti i modelli ereditano da una classe base comune che standardizza l'interfaccia:
+
+\begin{lstlisting}[language=Python]
+from abc import ABC, abstractmethod
+from typing import Optional, Tuple, Any
+import numpy as np
+
+class BaseForecaster(ABC):
+    """
+    Classe base per tutti i modelli di forecasting energetico.
+    Definisce l'interfaccia standard per training, predizione e salvataggio.
+    """
+    
+    def __init__(self, name: str):
+        self.name = name
+        self.is_fitted = False
+        self.feature_names = None
+    
+    @abstractmethod
+    def fit(self, X_train: np.ndarray, y_train: np.ndarray, 
+            X_val: Optional[np.ndarray] = None, 
+            y_val: Optional[np.ndarray] = None, **kwargs) -> None:
+        """Addestra il modello sui dati forniti."""
+        pass
+    
+    @abstractmethod  
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """Genera predizioni per i dati di input."""
+        pass
+\end{lstlisting}
+
+[Content continues with detailed implementation sections...]
+
+% ========================================
+% CAPITOLO 5 - RISULTATI SPERIMENTALI
+% ========================================
+
+\chapter{Risultati Sperimentali}
+
+\section{Overview dei Risultati}
+
+Gli esperimenti condotti hanno valutato sistematicamente le performance di diversi algoritmi di forecasting energetico su tre target principali: solar generation, carbon intensity e neighborhood solar. I risultati mostrano performance eccellenti per i modelli deep learning, con particolare evidenza per le tecniche di ensemble.
+
+\subsection{Dataset e Setup Sperimentale}
+
+La valutazione è stata condotta su:
+\begin{itemize}
+    \item \textbf{Edifici}: 3 building commerciali (Building\_1, Building\_2, Building\_3)
+    \item \textbf{Samples totali}: 2928 timestep orari (122 giorni)
+    \item \textbf{Features}: 16 features originali + 9 engineered features
+    \item \textbf{Validazione}: Cross-building Leave-One-Out (3 folds)
+\end{itemize}
+
+\section{Performance dei Modelli Neural Network}
+
+\subsection{Solar Generation Forecasting}
+
+La Tabella \ref{tab:solar_results} presenta i risultati completi per il forecasting di solar generation:
+
+\begin{table}[H]
+\centering
+\caption{Risultati Solar Generation Forecasting (RMSE Media ± Deviazione Standard)}
+\label{tab:solar_results}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Modello} & \textbf{RMSE} & \textbf{R² Medio} & \textbf{MAE} & \textbf{Samples} \\
+\midrule
+LSTM & $50.85 \pm 11.11$ & $0.9498 \pm 0.0224$ & $37.37 \pm 12.31$ & 5856 \\
+Transformer & $235.92 \pm 7.40$ & $-0.0135 \pm 0.0687$ & $203.54 \pm 8.46$ & 5856 \\
+TimesFM & $248.61 \pm 16.26$ & $-0.1544 \pm 0.2087$ & $198.01 \pm 4.52$ & 5856 \\
+ANN & $27.07 \pm 2.19$ & $0.9872 \pm 0.0034$ & $15.94 \pm 1.11$ & 5856 \\
+Random Forest & $26.79 \pm 1.09$ & $0.9875 \pm 0.0011$ & $14.15 \pm 0.42$ & 5856 \\
+Polynomial Reg. & $120.40 \pm 47.73$ & $0.7234 \pm 0.2156$ & $89.23 \pm 28.54$ & 5856 \\
+Gaussian Process & $297.69 \pm 0.00$ & $-0.6420 \pm 0.0000$ & $186.14 \pm 0.00$ & 5856 \\
+Ensemble Voting & $25.72 \pm 0.54$ & $\mathbf{0.9879} \pm 0.0008$ & $14.95 \pm 0.35$ & 5856 \\
+Ensemble Stacking & $\mathbf{25.07 \pm 0.41}$ & $0.9878 \pm 0.0006$ & $\mathbf{14.11 \pm 0.25}$ & 5856 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+[Results sections continue with detailed analysis...]
+
+% ========================================
+% CAPITOLO 6 - CONCLUSIONI
+% ========================================
+
+\chapter{Conclusioni e Sviluppi Futuri}
+
+\section{Sintesi dei Risultati}
+
+Questa tesi ha presentato un'implementazione avanzata e sistematica di algoritmi di forecasting energetico e reinforcement learning per smart buildings, basata sul framework CityLearn Challenge 2023. I risultati ottenuti dimostrano l'efficacia degli approcci proposed e forniscono insights significativi per l'ottimizzazione energetica negli edifici intelligenti.
+
+[Conclusions sections continue...]
+
+\begin{appendices}
+
+% ========================================
+% APPENDICE A - IMPLEMENTAZIONE SOFTWARE
+% ========================================
+
+\chapter{Implementazione Software}
+
+\section{Architettura del Sistema}
+
+Il sistema implementato è organizzato in una struttura modulare che garantisce estensibilità, manutenibilità e riproducibilità. Ogni modulo ha responsabilità specifiche e interfacce ben definite.
+
+[Software implementation details continue...]
+
+% ========================================
+% APPENDICE B - RISULTATI DETTAGLIATI
+% ========================================
+
+\chapter{Risultati Dettagliati e Analisi Aggiuntive}
+
+\section{Tabelle Complete dei Risultati}
+
+\subsection{Solar Generation - Risultati Completi per Edificio}
+
+[Detailed results tables continue...]
+
+\end{appendices}
+
+\end{document}
