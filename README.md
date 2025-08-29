@@ -344,7 +344,7 @@ This framework represents significant advances in energy forecasting:
 
 ## Authors & Acknowledgments
 
-**Developed with Claude Code** - Advanced AI assistant for software engineering
+**Advanced Energy Forecasting Framework** - Professional implementation
 
 ### Special Thanks
 - **CityLearn Challenge 2023** for providing the comprehensive dataset
@@ -371,4 +371,4 @@ This framework represents significant advances in energy forecasting:
 
 **If this project helped you, please leave a star!**
 
-*Generated with Claude Code - Advanced AI Assistant for Software Engineering*
+*Advanced Machine Learning Framework for Energy Optimization*
