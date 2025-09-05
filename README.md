@@ -1,11 +1,5 @@
 # Energy Forecasting & Optimization Framework
 
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://python.org)
-[![TensorFlow](https://img.shields.io/badge/tensorflow-2.x-orange.svg)](https://tensorflow.org)
-[![Performance](https://img.shields.io/badge/RMSE-25.07-green.svg)]()
-[![R²](https://img.shields.io/badge/R²-0.988-brightgreen.svg)]()
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
 Framework avanzato per previsioni energetiche e ottimizzazione smart buildings con **performance state-of-the-art**: **RMSE 25.07** e **R² 0.988**. Sistema completo con architetture neurali innovative, ensemble methods e validazione cross-building.
 
 ## 🎯 Key Features
@@ -127,10 +121,10 @@ Il sistema supporta 4 modalità configurabili:
 
 ```python
 EPOCHS_CONFIG = {
-    'quick': {'LSTM': 15, 'Transformer': 12},      # 5-10 min
-    'standard': {'LSTM': 50, 'Transformer': 50},    # 15-30 min  
-    'optimal': {'LSTM': 80, 'Transformer': 60},     # 45-90 min
-    'research': {'LSTM': 150, 'Transformer': 100}   # 2+ ore
+    'quick': {'LSTM': 15, 'Transformer': 12},    
+    'standard': {'LSTM': 50, 'Transformer': 50}, 
+    'optimal': {'LSTM': 80, 'Transformer': 60},    
+    'research': {'LSTM': 150, 'Transformer': 100} 
 }
 ```
 
@@ -270,15 +264,6 @@ batch_size=16  # invece di 32
 4. Push: `git push origin feature/amazing-feature`
 5. Apri Pull Request
 
-## 📄 License
-
-Questo progetto è rilasciato sotto licenza MIT - vedi [LICENSE](LICENSE) per dettagli.
-
-## 📞 Support & Contact
-
-- **Issues**: Report bugs via GitHub Issues
-- **Documentation**: Analisi completa in PROJECT_ANALYSIS.md
-- **Academic**: Metodologia completa in thesis/main.tex
 
 ---
 
