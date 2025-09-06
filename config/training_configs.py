@@ -7,7 +7,7 @@ EPOCHS_CONFIG = {
     # Training veloce per test e debug
     'quick': {
         'LSTM': 15,
-        'LSTM_Attention': 20,  # Attention richiede convergenza più lenta
+        'LSTM_Attention': 20,
         'Transformer': 12, 
         'TimesFM': 10,
         'ANN': 15,
@@ -17,7 +17,7 @@ EPOCHS_CONFIG = {
     # Training bilanciato per risultati affidabili
     'standard': {
         'LSTM': 50,
-        'LSTM_Attention': 60,  # Architettura più complessa richiede più epoche
+        'LSTM_Attention': 60,
         'Transformer': 50,
         'TimesFM': 40, 
         'ANN': 40,
@@ -27,7 +27,7 @@ EPOCHS_CONFIG = {
     # Training esteso per performance ottimali
     'optimal': {
         'LSTM': 80,
-        'LSTM_Attention': 100,  # Training prolungato per massimizzare attention
+        'LSTM_Attention': 100,
         'Transformer': 60,
         'TimesFM': 50,
         'ANN': 60,
@@ -37,7 +37,7 @@ EPOCHS_CONFIG = {
     # Training intensivo per ricerca e sperimentazione
     'research': {
         'LSTM': 150,
-        'LSTM_Attention': 200,  # Training esteso per esplorazione completa
+        'LSTM_Attention': 200,
         'Transformer': 100, 
         'TimesFM': 80,
         'ANN': 120,
@@ -48,13 +48,13 @@ EPOCHS_CONFIG = {
 # Criteri di convergenza per early stopping
 CONVERGENCE_CRITERIA = {
     'LSTM': {
-        'patience': 15,      # Epoche di pazienza
-        'min_delta': 0.001,  # Miglioramento minimo
+        'patience': 15,
+        'min_delta': 0.001,
         'monitor': 'val_loss'
     },
     'LSTM_Attention': {
-        'patience': 18,      # Più pazienza per convergenza attention
-        'min_delta': 0.0005, # Miglioramento più fine
+        'patience': 18,
+        'min_delta': 0.0005,
         'monitor': 'val_loss'
     },
     'Transformer': {
@@ -106,7 +106,7 @@ def get_convergence_config(model_name: str) -> dict:
     """
     return CONVERGENCE_CRITERIA.get(model_name, CONVERGENCE_CRITERIA['LSTM'])
 
-# Stima tempi di training (in minuti) su hardware medio
+# Stima tempi di training su hardware medio
 TRAINING_TIME_ESTIMATES = {
     'quick': {
         'total_time': '5-10 minuti',
@@ -128,6 +128,14 @@ TRAINING_TIME_ESTIMATES = {
         'Transformer': 25, 
         'TimesFM': 15,
         'ANN': 10
+    },
+    'research': {
+        'total_time': '2-4 ore',
+        'LSTM': 45,
+        'Transformer': 60, 
+        'TimesFM': 30,
+        'ANN': 35,
+        'LSTM_Attention': 80
     }
 }
 
@@ -149,6 +157,6 @@ def print_training_summary(training_mode: str = 'standard'):
 
 if __name__ == "__main__":
     # Test delle configurazioni
-    for mode in ['quick', 'standard', 'optimal']:
+    for mode in ['quick', 'standard', 'optimal', 'research']:
         print_training_summary(mode)
         print()

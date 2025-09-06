@@ -8,14 +8,17 @@ __pycache__/
 venv/
 *.log
 
-# Data files
+# Data files (too large for GitHub)
 data/
 *.csv
 *.pkl
 *.parquet
 
+# Large result files (can be regenerated)
+results/neural_networks/*.json
+results/rl_experiments/
 
-# Model checkpoints
+# Model checkpoints (too large)
 models/
 *.h5
 *.model
@@ -51,4 +54,3 @@ desktop.ini
 *.tmp
 *.temp
 .claude/
-thesis

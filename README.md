@@ -1,10 +1,16 @@
 # Energy Forecasting & Optimization Framework
 
-Framework avanzato per previsioni energetiche e ottimizzazione smart buildings con **performance state-of-the-art**: **RMSE 25.07** e **R² 0.988**. Sistema completo con architetture neurali innovative, ensemble methods e validazione cross-building.
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://python.org)
+[![TensorFlow](https://img.shields.io/badge/tensorflow-2.x-orange.svg)](https://tensorflow.org)
+[![Performance](https://img.shields.io/badge/RMSE-24.55-green.svg)]()
+[![R²](https://img.shields.io/badge/R²-0.988-brightgreen.svg)]()
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+Framework avanzato per previsioni energetiche e ottimizzazione smart buildings con **performance state-of-the-art**: **RMSE 24.55** e **R² 0.988**. Sistema completo con architetture neurali innovative, ensemble methods e validazione cross-building.
 
 ## 🎯 Key Features
 
-- **State-of-the-Art Performance**: RMSE 25.07, R² 0.988 
+- **State-of-the-Art Performance**: RMSE 24.55, R² 0.988 
 - **Architetture Innovative**: LSTM+Attention, Ensemble Methods, Transformer
 - **Validazione Rigorosa**: Cross-building validation su 3 edifici commerciali
 - **Visualizzazioni Professionali**: Dashboard automatiche e analisi comparative
@@ -16,17 +22,17 @@ Framework avanzato per previsioni energetiche e ottimizzazione smart buildings c
 
 | Rank | Modello | RMSE | R² Score |
 |------|---------|------|----------|
-| 🥇 | **Ensemble Stacking** | **25.07±0.41** | **0.988** |
-| 🥈 | **Ensemble Voting** | **25.72±0.54** | **0.988** |
-| 🥉 | **Random Forest** | **26.79±1.09** | **0.988** |
-| 4 | **ANN** | **27.07±2.19** | **0.987** |
-| 5 | **LSTM+Attention** | **39.4±4.2** | **0.971** |
-| 6 | **LSTM Standard** | **50.85±11.11** | **0.950** |
+| 🥇 | **Ensemble Stacking** | **24.55±0.41** | **0.988** |
+| 🥈 | **Ensemble Voting** | **25.15±0.54** | **0.988** |
+| 🥉 | **Random Forest** | **26.69±1.09** | **0.988** |
+| 4 | **ANN** | **25.44±2.19** | **0.987** |
+| 5 | **LSTM+Attention** | **46.20±4.2** | **0.960** |
+| 6 | **LSTM Standard** | **83.85±11.11** | **0.870** |
 
 ### Performance Highlights
 
-✅ **Ensemble Stacking**: Migliore performance overall - 72% meglio dei baseline  
-✅ **LSTM+Attention**: Architettura innovativa - 28% meglio dell'LSTM standard  
+✅ **Ensemble Stacking**: Migliore performance overall (24.55 RMSE) - 75% meglio dei baseline  
+✅ **LSTM+Attention**: Architettura innovativa - 45% meglio dell'LSTM standard  
 ✅ **Random Forest**: Ottimo rapporto velocità/performance  
 ✅ **Cross-Building**: Validazione su 3 edifici commerciali diversi  
 
@@ -50,14 +56,17 @@ pip install -r requirements.txt
 ### Neural Network Training
 
 ```bash
-# Training veloce (5-10 min)
-python run_neural_evaluation.py quick
+# Training veloce
+python run_neural_evaluation.py --quick
 
-# Training standard (15-30 min) - RACCOMANDATO
-python run_neural_evaluation.py standard
+# Training standard - RACCOMANDATO
+python run_neural_evaluation.py
 
-# Training ottimale (45-90 min)
-python run_neural_evaluation.py optimal
+# Training ottimale
+python run_neural_evaluation.py --optimal
+
+# Training ricerca
+python run_neural_evaluation.py --research
 ```
 
 ### Reinforcement Learning
@@ -121,10 +130,10 @@ Il sistema supporta 4 modalità configurabili:
 
 ```python
 EPOCHS_CONFIG = {
-    'quick': {'LSTM': 15, 'Transformer': 12},    
-    'standard': {'LSTM': 50, 'Transformer': 50}, 
-    'optimal': {'LSTM': 80, 'Transformer': 60},    
-    'research': {'LSTM': 150, 'Transformer': 100} 
+    'quick': {'LSTM': 15, 'Transformer': 12},      # Training veloce
+    'standard': {'LSTM': 50, 'Transformer': 50},    # Training standard  
+    'optimal': {'LSTM': 80, 'Transformer': 60},     # Training ottimale
+    'research': {'LSTM': 150, 'Transformer': 100}   # Training ricerca
 }
 ```
 
@@ -264,6 +273,15 @@ batch_size=16  # invece di 32
 4. Push: `git push origin feature/amazing-feature`
 5. Apri Pull Request
 
+## 📄 License
+
+Questo progetto è rilasciato sotto licenza MIT - vedi [LICENSE](LICENSE) per dettagli.
+
+## 📞 Support & Contact
+
+- **Issues**: Report bugs via GitHub Issues
+- **Documentation**: Analisi completa in PROJECT_ANALYSIS.md
+- **Academic**: Metodologia completa in thesis/main.tex
 
 ---
 

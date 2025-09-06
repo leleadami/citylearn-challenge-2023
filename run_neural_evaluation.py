@@ -3,9 +3,10 @@ Valutazione di Reti Neurali per la Gestione Energetica Intelligente degli Edific
 Implementazioni avanzate di LSTM, Transformer e modelli baseline
 
 Usage:
-    python run_neural_evaluation.py                    # Standard training (50 epoche, ~30 min)
-    python run_neural_evaluation.py --quick           # Quick training (15 epoche, ~10 min)  
-    python run_neural_evaluation.py --optimal         # Optimal training (80 epoche, ~90 min)
+    python run_neural_evaluation.py                    # Standard training
+    python run_neural_evaluation.py --quick           # Quick training  
+    python run_neural_evaluation.py --optimal         # Optimal training
+    python run_neural_evaluation.py --research        # Research training
 
 Questo modulo fornisce una valutazione completa delle architetture neurali per:
 1. Previsione del consumo energetico degli edifici
@@ -821,9 +822,12 @@ if __name__ == "__main__":
     elif '--optimal' in sys.argv:
         training_mode = 'optimal' 
         print(f"MODALITA' OPTIMAL: Training ottimale")
+    elif '--research' in sys.argv:
+        training_mode = 'research'
+        print(f"MODALITA' RESEARCH: Training esteso per ricerca")
     else:
         print(f"MODALITA' STANDARD: Training bilanciato")
-        print(f"   Usa --quick per training veloce o --optimal per risultati ottimali")
+        print(f"   Usa --quick, --optimal, o --research per altre modalità")
     
     # Mostra configurazione 
     try:
