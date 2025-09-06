@@ -242,7 +242,7 @@ Meta-learner apprende combinazione ottimale:
 | Zhang et al. (2021) | LSTM | 45.7 | 0.892 | Residenziale |
 | Kumar et al. (2022) | CNN-LSTM | 38.2 | 0.923 | Commerciale |
 | Wang et al. (2023) | RF+ANN | 31.4 | 0.956 | Industriale |
-| **Questo Lavoro** | **Ensemble** | **25.07** | **0.988** | **Commerciale** |
+| **Questo Lavoro** | **Ensemble** | **24.55** | **0.988** | **Commerciale** |
 
 ## 🛠️ Troubleshooting
 
@@ -265,34 +265,14 @@ batch_size=16  # invece di 32
 'patience': 20  # invece di 10
 ```
 
-## 🤝 Contribuire
-
-1. Fork del repository
-2. Crea feature branch: `git checkout -b feature/amazing-feature`
-3. Commit: `git commit -m 'Add amazing feature'`
-4. Push: `git push origin feature/amazing-feature`
-5. Apri Pull Request
-
-## 📄 License
-
-Questo progetto è rilasciato sotto licenza MIT - vedi [LICENSE](LICENSE) per dettagli.
-
-## 📞 Support & Contact
-
-- **Issues**: Report bugs via GitHub Issues
-- **Documentation**: Analisi completa in PROJECT_ANALYSIS.md
-- **Academic**: Metodologia completa in thesis/main.tex
-
 ---
 
 ## 📊 Project Status
 
 **Development**: ✅ Completo  
-**Performance**: ⭐ State-of-the-Art (RMSE: 25.07, R² 0.988)  
+**Performance**: ⭐ State-of-the-Art (RMSE: 24.55, R² 0.988)  
 **Deployment**: 🚀 Production-Ready  
 **Documentation**: 📚 Completa  
 **Validation**: 🔬 Rigorosa  
 
-**Se questo progetto ti è stato utile, lascia una stella! ⭐**
-
-*Advanced Machine Learning Framework for Energy Optimization*
+*Advanced Energy Forecasting Framework - Research Project*
