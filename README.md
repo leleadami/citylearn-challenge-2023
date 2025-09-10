@@ -239,7 +239,7 @@ Meta-learner apprende combinazione ottimale:
 | Wang et al. (2023) | RF+ANN | 31.4 | 0.956 | Industriale |
 | **Questo Lavoro** | **Ensemble** | **24.55** | **0.988** | **Commerciale** |
 
-## 🛠️ Troubleshooting
+## Troubleshooting
 
 ### Problemi Comuni
 
