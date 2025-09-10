@@ -1,14 +1,9 @@
 # Energy Forecasting & Optimization Framework
 
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://python.org)
-[![TensorFlow](https://img.shields.io/badge/tensorflow-2.x-orange.svg)](https://tensorflow.org)
-[![Performance](https://img.shields.io/badge/RMSE-24.55-green.svg)]()
-[![R²](https://img.shields.io/badge/R²-0.988-brightgreen.svg)]()
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Framework avanzato per previsioni energetiche e ottimizzazione smart buildings con **performance state-of-the-art**: **RMSE 24.55** e **R² 0.988**. Sistema completo con architetture neurali innovative, ensemble methods e validazione cross-building.
 
-## 🎯 Key Features
+##  Key Features
 
 - **State-of-the-Art Performance**: RMSE 24.55, R² 0.988 
 - **Architetture Innovative**: LSTM+Attention, Ensemble Methods, Transformer
@@ -16,7 +11,7 @@ Framework avanzato per previsioni energetiche e ottimizzazione smart buildings c
 - **Visualizzazioni Professionali**: Dashboard automatiche e analisi comparative
 - **Production Ready**: Sistema robusto con fallback multipli
 
-## 📊 Risultati Performance
+## Risultati Performance
 
 ### Solar Generation Forecasting
 
@@ -31,12 +26,12 @@ Framework avanzato per previsioni energetiche e ottimizzazione smart buildings c
 
 ### Performance Highlights
 
-✅ **Ensemble Stacking**: Migliore performance overall (24.55 RMSE) - 75% meglio dei baseline  
-✅ **LSTM+Attention**: Architettura innovativa - 45% meglio dell'LSTM standard  
-✅ **Random Forest**: Ottimo rapporto velocità/performance  
-✅ **Cross-Building**: Validazione su 3 edifici commerciali diversi  
+ **Ensemble Stacking**: Migliore performance overall (24.55 RMSE) - 75% meglio dei baseline  
+ **LSTM+Attention**: Architettura innovativa - 45% meglio dell'LSTM standard  
+ **Random Forest**: Ottimo rapporto velocità/performance  
+ **Cross-Building**: Validazione su 3 edifici commerciali diversi  
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Installazione
 
@@ -79,7 +74,7 @@ python run_rl_evaluation.py
 python run_rl_evaluation.py --episodes 2000 --agent sac
 ```
 
-## 🏗️ Architettura
+##  Architettura
 
 ```
 src/
@@ -100,7 +95,7 @@ results/                # Risultati e visualizzazioni
 notebooks/              # Jupyter notebooks training
 ```
 
-## 🔬 Modelli Supportati
+## Modelli Supportati
 
 ### Neural Networks
 - **LSTM+Attention** - Architettura ibrida innovativa
@@ -122,7 +117,7 @@ notebooks/              # Jupyter notebooks training
 - **SAC** - Soft Actor-Critic per controllo continuo
 - **Q-Learning** - Apprendimento per rinforzo discreto
 
-## ⚙️ Configurazione
+## Configurazione
 
 ### Training Modes
 
@@ -150,7 +145,7 @@ LSTMAttentionForecaster(
 )
 ```
 
-## 📈 Visualizzazioni
+## Visualizzazioni
 
 Il sistema genera automaticamente:
 
@@ -168,7 +163,7 @@ Il sistema genera automaticamente:
 - `rl_03_architecture_comparison.png` - Centralizzato vs Decentralizzato
 - `rl_04_sac_loss_analysis.png` - Analisi loss SAC
 
-## 💡 Esempi d'Uso
+## Esempi d'Uso
 
 ### Modello Specifico
 
@@ -204,7 +199,7 @@ from src.visualization.advanced_charts import create_comprehensive_visualization
 create_comprehensive_visualizations(results_dict)
 ```
 
-## 🔧 Dataset & Validazione
+## Dataset & Validazione
 
 - **Dataset**: CityLearn Challenge 2023 - 3 edifici commerciali
 - **Samples**: 2928 campioni orari (122 giorni)
@@ -213,7 +208,7 @@ create_comprehensive_visualizations(results_dict)
 - **Validazione**: Leave-One-Building-Out cross-validation
 - **Metriche**: RMSE, R², MAE, MAPE con significatività statistica
 
-## 🎯 Innovazioni Tecniche
+## Innovazioni Tecniche
 
 ### LSTM+Attention Breakthrough
 Architettura ibrida rivoluzionaria che combina:
@@ -235,7 +230,7 @@ Meta-learner apprende combinazione ottimale:
 - ANN per approssimazione universale
 - **Risultato**: Supera migliore modello singolo
 
-## 📚 Benchmark Comparison
+## Benchmark Comparison
 
 | Studio | Metodo | RMSE | R² | Dataset |
 |--------|--------|------|----|---------|
@@ -269,10 +264,10 @@ batch_size=16  # invece di 32
 
 ## 📊 Project Status
 
-**Development**: ✅ Completo  
-**Performance**: ⭐ State-of-the-Art (RMSE: 24.55, R² 0.988)  
-**Deployment**: 🚀 Production-Ready  
-**Documentation**: 📚 Completa  
-**Validation**: 🔬 Rigorosa  
+**Development**: Completo  
+**Performance**: State-of-the-Art (RMSE: 24.55, R² 0.988)  
+**Deployment**: Production-Ready  
+**Documentation**: Completa  
+**Validation**: Rigorosa  
 
 *Advanced Energy Forecasting Framework - Research Project*
