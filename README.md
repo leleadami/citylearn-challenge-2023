@@ -262,7 +262,7 @@ batch_size=16  # invece di 32
 
 ---
 
-## 📊 Project Status
+## Project Status
 
 **Development**: Completo  
 **Performance**: State-of-the-Art (RMSE: 24.55, R² 0.988)  
